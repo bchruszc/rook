@@ -1,0 +1,192 @@
+{% extends "rookscore/base.html" %}
+
+{% block body %}
+
+<h3>Score Entry</h3>
+
+<form action="/entry/" method="post" class="form-horizontal">
+    <fieldset>
+        <legend>Entry Form</legend>
+        {# Include the hidden fields #}
+        {% csrf_token %}
+        {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+
+        <div class="form-group">
+            <label for="inputEmail" class="control-label">{{ form.game_date.label_tag }}</label>
+            <div>
+                {{ form.game_date.errors }}
+                {{ form.game_date }}
+                <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+            </div>
+        </div>
+        
+        <br>
+
+        <!-- Players -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <td>
+                        Player 1
+                    </td>
+                    <td>
+                        Player 2
+                    </td>
+                    <td>
+                        Player 3
+                    </td>
+                    <td>
+                        Player 4
+                    </td>
+                    <td>
+                        Player 5
+                    </td>
+                    <td>
+                        Player 6
+                    </td>
+                </tr>
+            </thead>
+            <tr>
+                <td>
+                    <div>
+                        {{ form.name1.errors }}
+                        {{ form.name1 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.name2.errors }}
+                        {{ form.name2 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.name3.errors }}
+                        {{ form.name3 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.name4.errors }}
+                        {{ form.name4 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.name5.errors }}
+                        {{ form.name5 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.name6.errors }}
+                        {{ form.name6 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div>
+                        {{ form.star1.errors }}
+                        {{ form.star1 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.star2.errors }}
+                        {{ form.star2 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.star3.errors }}
+                        {{ form.star3 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.star4.errors }}
+                        {{ form.star4 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.star5.errors }}
+                        {{ form.star5 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                        <div class="checkbox">
+                            {{ form.star6.errors }}
+                            <label>
+
+                            {{ form.star6 }}
+                            </label>
+                            <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                        </div>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div>
+                        {{ form.score1.errors }}
+                        {{ form.score1 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.score2.errors }}
+                        {{ form.score2 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.score3.errors }}
+                        {{ form.score3 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.score4.errors }}
+                        {{ form.score4 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.score5.errors }}
+                        {{ form.score5 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        {{ form.score6.errors }}
+                        {{ form.score6 }}
+                        <!--<input type="text" class="form-control" id="inputEmail" placeholder="Email">-->
+                    </div>
+                </td>
+            </tr>
+        </table>
+    <p><input type="submit" value="Submit Score" /></p>
+    <fieldset/>
+</form>
+
+{% endblock %}

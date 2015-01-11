@@ -1,0 +1,15 @@
+{% extends "rookscore/base.html" %}
+
+{% block body %}
+
+    <h3>Games Page</h3>
+
+    {% if games_list %}
+    {% for game in games_list %}
+    {% include "rookscore/single_game_summary.html" %}
+    {% endfor %}
+    {% else %}
+    <p>No games are available.</p>
+    {% endif %}
+
+{% endblock %}

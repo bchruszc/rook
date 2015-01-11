@@ -1,0 +1,63 @@
+<html>
+  <head>
+      <meta charset="utf-8">
+      <title>Bootswatch: Paper</title>
+      <link rel="stylesheet" href="/static/css/bootstrap.css">
+      <link rel="stylesheet" href="/static/css/bootswatch.min.css">
+      <link rel="stylesheet" href="/static/css/rookscore.css">
+  </head>
+  <body>
+    <div class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a href="../" class="navbar-brand">RookScore</a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav">
+            <!--<li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="themes">Themes <span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="themes">
+                <li><a href="../default/">Default</a></li>
+                <li class="divider"></li>
+                <li><a href="../cerulean/">Cerulean</a></li>
+                <li><a href="../cosmo/">Cosmo</a></li>
+              </ul>
+            </li>-->
+            <li>
+              <a href="/games/">Games</a>
+            </li>
+            <li>
+              <a href="/players/">Player</a>
+            </li>
+            <li>
+              <a href="/awards/">Awards</a>
+            </li>
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li>
+              <a href="/entry/">Score Entry</a>
+            </li>
+            <li>
+              <a href="/api/games/">API</a>
+            </li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      {% block body %}
+      fail
+      {% endblock %}  
+    </div>
+  </body>
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="/static/js/bootstrap.min.js"></script>
+  <script src="/static/js/bootswatch.js"></script>
+</html>

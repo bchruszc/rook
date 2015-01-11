@@ -1,0 +1,19 @@
+{% extends "rookscore/base.html" %}
+
+{% block body %}
+
+    <h3>Players Page</h3>
+
+    {% if players_list %}
+    <ul class="list-group">
+        
+    {% for player in players_list %}
+    <a href="/player/{{player.id}}" class="list-group-item">{{ player }}</a>
+    {% endfor %}
+    </ul>
+
+    {% else %}
+    <p>No players are available.</p>
+    {% endif %}
+
+{% endblock %}
