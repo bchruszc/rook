@@ -1,0 +1,19 @@
+{% extends "rookscore/base.html" %}
+
+{% block body %}
+
+    <h3>Awards Page</h3>
+
+    {% if awards_list %}
+    <ul class="list-group">
+        
+    {% for award in awards_list %}
+    <a href="#" class="list-group-item">AWARD</a>
+    {% endfor %}
+    </ul>
+
+    {% else %}
+    <p>No awards are available yet</p>
+    {% endif %}
+
+{% endblock %}
