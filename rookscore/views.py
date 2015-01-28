@@ -107,6 +107,15 @@ def players(request):
 def player(request, player_id):
     return HttpResponse("You have requested player #" + str(player_id))
 
+def awards(request):
+    award_list = []
+    template = loader.get_template('rookscore/awards.html')
+    context = RequestContext(request, {
+        'award_list': award_list,
+    })
+    return HttpResponse(template.render(context))
+
+
 #
 # APIS
 #
