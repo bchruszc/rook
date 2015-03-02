@@ -33,17 +33,16 @@ urlpatterns = patterns('',
     url(r'^awards/', views.awards, name='awards'),
 
     url(r'^api/games/$', views.GameList.as_view(), name='api-games'),
-    url(r'^api/games/(?P<pk>[0-9]+)/$', views.GameList.as_view(), name='game-detail'),
+    url(r'^api/games/(?P<pk>[0-9]+)/$', views.GameDetail.as_view(), name='api-game-detail'),
     
-    url(r'^api/scores/$', views.ScoreList.as_view(), 'api-scores'),
-    url(r'^api/scores/(?P<pk>[0-9]+)/$', views.ScoreList.as_view(), name='score-detail'),
+    url(r'^api/scores/$', views.ScoreList.as_view(), name='api-scores'),
+    url(r'^api/scores/(?P<pk>[0-9]+)/$', views.ScoreDetail.as_view(), name='api-score-detail'),
     
-    url(r'^api/bid/$', views.BidList.as_view(), 'api-bid'),
-    url(r'^api/bid/(?P<pk>[0-9]+)/$', views.BidList.as_view(), name='bid-detail'),
+    url(r'^api/bid/$', views.BidList.as_view(), name='api-bid'),
+    url(r'^api/bid/(?P<pk>[0-9]+)/$', views.BidDetail.as_view(), name='api-bid-detail'),
 
-    url(r'^api/players/$', views.PlayerList.as_view(), 'api-players'),
-    url(r'^api/players/(?P<pk>[0-9]+)/$', views.PlayerList.as_view(), name='player-detail'),
-
+    url(r'^api/players/$', views.PlayerList.as_view(), name='api-players'),
+    url(r'^api/players/(?P<pk>[0-9]+)/$', views.PlayerDetail.as_view(), name='api-player-detail'),
 
    #url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),

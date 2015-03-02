@@ -7,7 +7,7 @@
       <link rel="stylesheet" href="/static/css/rookscore.css">
   </head>
   <body>
-    <div class="navbar navbar-default navbar-fixed-top">
+    <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <a href="../" class="navbar-brand">RookScore</a>
@@ -60,7 +60,12 @@
       {% endblock %}  
     </div>
   </body>
-  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
   <script src="/static/js/bootstrap.min.js"></script>
   <script src="/static/js/bootswatch.js"></script>
+  
+  {% block extra_script %}
+  
+  {% endblock %}
 </html>

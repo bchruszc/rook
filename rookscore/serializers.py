@@ -7,7 +7,7 @@ from rest_framework import routers, serializers, viewsets
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
-        fields = ('player_id', 'first_name', 'last_name')
+        fields = ('id', 'player_id', 'first_name', 'last_name')
 
 # ViewSets define the view behavior.
 class PlayerViewSet(viewsets.ModelViewSet):
@@ -19,7 +19,7 @@ class ScoreSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PlayerGameSummary
-        fields = ('player', 'score', 'made_bid')
+        fields = ('id', 'player', 'score', 'made_bid')
         
 class ScoreViewSet(viewsets.ModelViewSet):
     queryset = PlayerGameSummary.objects.all()
@@ -50,7 +50,7 @@ class GameSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Game
-        fields = ('entered_date', 'played_date', 'scores', 'bids')
+        fields = ('id', 'entered_date', 'played_date', 'scores', 'bids')
         
 # ViewSets define the view behavior.
 class GameViewSet(viewsets.ModelViewSet):
