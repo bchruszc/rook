@@ -27,6 +27,11 @@ def index(request):
     })
     return HttpResponse(template.render(context))
 
+def getScore(summary):
+    if summary.made_bid:
+        return 10000 + summary.score
+    return summary.score
+
 def entry(request):
     if request.method == 'POST': # If the form has been submitted...
         # ContactForm was defined in the previous section
@@ -39,6 +44,9 @@ def entry(request):
             game.played_date = form.cleaned_data['game_date']
             game.entered_date = datetime.datetime.now()
             game.save()
+            
+            summaries = []
+            scores = []
             
             for i in range (1,7):
                 player = form.cleaned_data['name' + str(i)]
@@ -53,10 +61,31 @@ def entry(request):
                     
                     summary.save()
                     
+                    summaries.append(summary)
+                    scores.append(summary.score)
+                    
                 else:
                     # Left blank, and that's okay.
                     pass
             
+            summaries.sort(reverse=True, key=getScore)
+            
+            # Need to take in to consideration STAR, and get the rank
+            last_score = -100000;
+            last_rank = 1;
+            last_made_bid = summaries[0].made_bid
+            index = 1;
+            for s in summaries:
+                if s.score == last_score and s.made_bid == last_made_bid:
+                    s.rank = last_rank
+                else:
+                    s.rank = index
+                
+                last_score = s.score
+                last_rank = s.rank
+                last_made_bid = s.made_bid
+                index = index + 1
+                s.save()
             
             return HttpResponseRedirect('/') # Redirect after POST
     else:

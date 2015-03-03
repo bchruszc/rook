@@ -19,7 +19,7 @@ class ScoreSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PlayerGameSummary
-        fields = ('id', 'player', 'score', 'made_bid')
+        fields = ('id', 'player', 'rank', 'score', 'made_bid')
         
 class ScoreViewSet(viewsets.ModelViewSet):
     queryset = PlayerGameSummary.objects.all()

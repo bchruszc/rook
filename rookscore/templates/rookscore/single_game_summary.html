@@ -21,7 +21,7 @@
                 {% for score in game.scores.all %}
                 <tr>
                     <td>
-                        1
+                        {{ score.rank }}
                     </td>
                     <td>
                         <a href="/player/{{ score.player.id }}">
