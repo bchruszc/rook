@@ -17,7 +17,7 @@ from rest_framework import generics
 from rest_framework import permissions
 
 import datetime
-import utils
+from rookscore import utils
 
 def index(request):
     rankings = Player.objects.rankings(month=3, year=2015)

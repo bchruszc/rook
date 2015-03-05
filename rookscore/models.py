@@ -3,7 +3,7 @@ from datetime import timedelta
 from datetime import datetime
 from datetime import date
 
-import utils
+from rookscore import utils
 
 def get_rank(score):
     return score.rank
