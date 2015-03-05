@@ -1,7 +1,49 @@
 from django.db import models
+from datetime import timedelta
+from datetime import datetime
+from datetime import date
+
+import utils
 
 def get_rank(score):
     return score.rank
+
+class Rankings:
+    games_count = 0
+    player_list = []
+
+class PlayerManager(models.Manager):
+    def rankings(self, month=None, year=None):
+        games = None
+        if month:
+            if not year:
+                year = datetime.now().year
+            month_start = date(year, month, 1)
+            next_month_start = month_start + timedelta(days=32)
+            next_month_start.replace(day=1)
+            games = Game.objects.filter(played_date__gte=month_start, played_date__lt=next_month_start)
+        else:
+            games = Game.objects.all()
+        
+        # We've got the games - run through them and calculate a ranking
+        # I don't know how it works - let's just say you get a point for every player you beat!
+        
+        ratings = {}
+        for g in games:
+            utils.update_elo(g, ratings)
+        
+        all_players = ratings.keys()
+        
+        for p in all_players:
+            p.rating = int(round(ratings[p]))
+            
+        utils.sortAndRankPlayers(all_players)
+        
+        rankings = Rankings()
+        rankings.game_count = len(games)
+        rankings.player_list = all_players
+        
+        return rankings
 
 class Game(models.Model):
     played_date = models.DateTimeField('date played')
@@ -19,7 +61,8 @@ class Player(models.Model):
     player_id = models.IntegerField(unique=True)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
-
+    objects = PlayerManager()
+    
     def __str__(self):              # __unicode__ on Python 2
         return str(self.first_name) + ' ' + str(self.last_name)
 

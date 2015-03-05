@@ -1,17 +1,29 @@
 {% extends "rookscore/base.html" %}
 
 {% block body %}
+<div class="col-lg-6">
+    <h3>{% now "F" %} Standings</h3>
 
-    <h3>Overall Standings</h3>
+    {% if rankings.player_list %}
+        {% include "rookscore/standings_table.html" %}
+    {% else %}
+    <p>No players are available!</p>
+    {% endif %}
+</div>
 
-    {% if player_list %}
-    <ul class="list-group">
-    {% for player in player_list %}
-        <li class="list-group-item"><a href="{% url 'player' player.id %}">{{ player.first_name }}</a></li>
-    {% endfor %}
+<div class="col-lg-6">
+    <h3>Recent Games</h3>
+    {% if recent_game_list %}
+        {% for game in recent_game_list %}
+        {% if game.scores.count != 0 %}
+        <div class="col-lg-12">
+            {% include "rookscore/single_game_summary.html" %}
+        </div>
+        {% endif %}
+        {% endfor %}
     </ul>
     {% else %}
-    <p>No players are available.</p>
+    <p>No games are available.</p>
     {% endif %}
-
+</div>
 {% endblock %}
