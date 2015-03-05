@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rookscore.models import Game, Player, PlayerGameSummary, Bid
 from rest_framework import routers, serializers, viewsets
 
-import utils
+from rookscore import utils
 
 # Serializers define the API representation.
 class PlayerSerializer(serializers.ModelSerializer):
