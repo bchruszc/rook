@@ -28,7 +28,7 @@ def _getRating(player):
     return player.rating
     
 def sortAndRankPlayers(players):
-    players.sort(reverse=True, key=_getRating)
+    players = sorted(players, reverse=True, key=_getRating)
     
     index = 1
     last_rating = -10000
@@ -42,6 +42,8 @@ def sortAndRankPlayers(players):
         last_rating = p.rating
         last_rank = p.rank
         index = index + 1
+        
+    return players
 
 def _win_func(value):
     # Currently inverse log

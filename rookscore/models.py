@@ -37,7 +37,7 @@ class PlayerManager(models.Manager):
         for p in all_players:
             p.rating = int(round(ratings[p]))
             
-        utils.sortAndRankPlayers(all_players)
+        all_players = utils.sortAndRankPlayers(all_players)
         
         rankings = Rankings()
         rankings.game_count = len(games)
