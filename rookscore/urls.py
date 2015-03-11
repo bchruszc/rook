@@ -24,6 +24,8 @@ urlpatterns = patterns('',
 
     url(r'^entry/', views.entry, name='entry'),
     
+    url(r'^games/repair/', views.games_repair, name='games_repair'),
+
     url(r'^games/', views.games, name='games'),
     url(r'^game/(?P<game_id>\d+)/$', views.game, name='game'),
     

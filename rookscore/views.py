@@ -68,7 +68,7 @@ def entry(request):
                     # Left blank, and that's okay.
                     pass
             
-            utils.sortAndRank(summaries)
+            utils.sortAndRankSummaries(summaries)
 
             for s in summaries:
                 s.save()
@@ -90,6 +90,16 @@ def entry(request):
     })
     return HttpResponse(template.render(context))    
 '''
+
+def games_repair(request):
+    for g in Game.objects.all():
+        summaries = list(g.scores.all())
+        utils.sortAndRankSummaries(summaries)
+
+        for s in summaries:
+            s.save() 
+    return HttpResponse("<html><body>Repair complete.</body></html>")
+
 
 def games(request):
     games_list = Game.objects.order_by('-entered_date')[:5]

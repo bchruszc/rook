@@ -52,7 +52,7 @@ class GameSerializer(serializers.ModelSerializer):
             summary = PlayerGameSummary.objects.create(game=game, player=player, **score_data)
             summaries.append(summary)
         # Write a utility to generate ranks and apply them, given a list of summaries - link to the HTML entry
-        utils.sortAndRank(summaries)
+        utils.sortAndRankSummaries(summaries)
         
         for s in summaries:
             s.save()
