@@ -1,0 +1,17 @@
+# 
+# Brad's Cheat Sheet
+#
+# Brad has a terrible memory.  Some command line stuff that will help...
+#
+
+#
+#  To update models
+#
+
+# Django ??? on Cloud9:
+./manage.py schemamigration rookscore --auto
+./manage.py migrate rookscore
+
+# Django 1.7+ (webfaction)
+python manage.py makemigrations
+python manage.py migrate
