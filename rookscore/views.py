@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.forms.formsets import formset_factory
 
 from rookscore.forms import PlayerForm
-from rookscore.models import Player, Game, PlayerGameSummary, Bid
+from rookscore.models import Player, Game, PlayerGameSummary, Bid, SeasonManager
 from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
 from rookscore import settings
 
@@ -20,17 +20,17 @@ import datetime
 from rookscore import utils
 
 def index(request):
-    rankings = Player.objects.rankings(month=3, year=2015)
+    season = SeasonManager().current()
+    rankings = Player.objects.rankings(season)
     recent_game_list = Game.objects.order_by('-played_date')[:5]
     template = loader.get_template('rookscore/index.html')
     context = RequestContext(request, {
+        'season':season,
         'rankings': rankings,
         'recent_game_list':recent_game_list,
         'settings': settings,
     })
     return HttpResponse(template.render(context))
-
-
 
 def entry(request):
     if request.method == 'POST': # If the form has been submitted...
@@ -97,7 +97,7 @@ def games_repair(request):
         utils.sortAndRankSummaries(summaries)
 
         for s in summaries:
-            s.save() 
+            s.save()
     return HttpResponse("<html><body>Repair complete.</body></html>")
 
 

@@ -13,7 +13,7 @@
                         Player
                     </th>
                     <th>
-                        Score
+                        Rating
                     </th>
                 </tr>
             </thead>
@@ -30,6 +30,13 @@
                     </td>
                     <td>
                         {{ player.rating }}
+                        {% if player.rating_change %}
+                            {% if player.rating_change >= 0%}
+                                <span class="score_up">(+{{ player.rating_change }})</span>
+                            {% else %}
+                                <span class="score_down">({{ player.rating_change }})</span>
+                            {% endif %}
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

@@ -1,3 +1,13 @@
+.score_up {
+   color: green;
+   font-size: 75%;
+}
+
+.score_down {
+   color: red;
+   font-size: 75%;
+}
+
 .table td {
    text-align: center;   
 }

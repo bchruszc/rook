@@ -114,7 +114,17 @@ def update_elo(game, ratings):
         #if pig.rank == 1:
         #    actual = 1.0
 
-        new_rating = ratings[s.player] + (K * (actual - expected))
+        # Determine if this is the first time that the score has been calculated - if so, save
+        precalc_rating = s.rating
+        precalc_rating_change = s.rating_change
+
+        rating_change = (K * (actual - expected))
+        new_rating = ratings[s.player] + rating_change
+
+        if(s.rating != round(new_rating) or s.rating_change != round(rating_change)):
+            s.rating = round(new_rating)
+            s.rating_change = round(rating_change)
+            s.save()
 
         ratings[s.player] = new_rating
 
