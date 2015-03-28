@@ -13,5 +13,5 @@
 ./manage.py migrate rookscore
 
 # Django 1.7+ (webfaction)
-python manage.py makemigrations
-python manage.py migrate
+python3.4 manage.py.bak makemigrations
+python3.4 manage.py.bak migrate

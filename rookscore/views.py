@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext, loader
 from django.shortcuts import render
 from django.forms.formsets import formset_factory
@@ -130,7 +130,33 @@ def players(request):
     return HttpResponse(template.render(context))
 
 def player(request, player_id):
-    return HttpResponse("You have requested player #" + str(player_id))
+    try:
+        player = Player.objects.get(pk=player_id)
+    except Player.DoesNotExist:
+        raise Http404
+        
+    all_players = Player.objects.all()        
+    recent_games = Game.objects.filter()
+    
+    finishes = []
+    finishes.append(['4 Player', 0, 0, 0, 0, '', '', ])    
+    finishes.append(['5 Player', 0, 0, 0, 0, 0, '', ])
+    finishes.append(['6 Player', 0, 0, 0, 0, 0, 0, ])
+    finishes.append(['Total', 0, 0, 0, 0, 0, 0, ])
+
+    for score in PlayerGameSummary.objects.filter(player=player):
+        num_players = score.game.scores.count()
+        if score.rank < 7:
+            finishes[num_players-4][score.rank] = finishes[num_players-4][score.rank] + 1
+            finishes[3][score.rank] = finishes[3][score.rank] + 1
+    
+    return render(request, 'rookscore/player.html', 
+        {
+            'player': player,
+            'all_players': all_players,
+            'recent_games': recent_games,
+            'finishes': finishes,
+        })
 
 def awards(request):
     award_list = []
