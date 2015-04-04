@@ -100,9 +100,9 @@ def games_repair(request):
             s.save()
     return HttpResponse("<html><body>Repair complete.</body></html>")
 
-
+    
 def games(request):
-    games_list = Game.objects.order_by('-entered_date')[:5]
+    games_list = Game.objects.order_by('-entered_date')
     template = loader.get_template('rookscore/games.html')
     context = RequestContext(request, {
         'games_list': games_list,
@@ -120,6 +120,14 @@ def game(request, game_id):
 #    return render(request, 'polls/detail.html', {'poll': poll})
     
     return HttpResponse("You have requested game #" + str(game_id))
+
+def seasons(request):
+    seasons = SeasonManager().all()
+    template = loader.get_template('rookscore/seasons.html')
+    context = RequestContext(request, {
+        'seasons': seasons,
+    })
+    return HttpResponse(template.render(context))
 
 def players(request):
     players_list = Player.objects.order_by('first_name')

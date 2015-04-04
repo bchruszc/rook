@@ -90,6 +90,7 @@ class Bid(models.Model):
     opponents = models.ManyToManyField(Player, related_name='opponents')
     points_bid = models.IntegerField(default=False)
     points_made = models.IntegerField()
+    hand_number = models.IntegerField(default='0')
     
     def __str__(self):              # __unicode__ on Python 2
         return str(self.caller) + ' bid ' + str(self.points_bid) + ' and made ' + str(self.points_made)
@@ -176,4 +177,4 @@ class SeasonManager():
         
     def all(self):
         # Given all of the games, figure out which seasons are populated
-        pass
+        return [self.current()]

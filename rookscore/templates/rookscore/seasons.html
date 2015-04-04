@@ -1,0 +1,19 @@
+{% extends "rookscore/base.html" %}
+
+{% block body %}
+
+    <h3>Seasons Page</h3>
+
+    {% if seasons %}
+    <ul class="list-group">
+        
+    {% for s in seasons %}
+    <a href="/season/{{s.season}}{{s.year}}" class="list-group-item">{{ s.season }} {{ s.year }}</a>
+    {% endfor %}
+    </ul>
+
+    {% else %}
+    <p>No seasons are available.</p>
+    {% endif %}
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{
+    "entered_date": "2012-01-05T19:33:37Z", 
+    "played_date": "2012-01-03T00:00:00Z", 
+    "scores": [
+        {
+            "player": 4, 
+            "rank": 1, 
+            "score": 180, 
+            "made_bid": true
+        }, 
+        {
+            "player": 20, 
+            "rank": 2, 
+            "score": 180, 
+            "made_bid": false
+        }, 
+        {
+            "player": 21, 
+            "rank": 3, 
+            "score": 0, 
+            "made_bid": false
+        }, 
+        {
+            "player": 19, 
+            "rank": 4, 
+            "score": 0, 
+            "made_bid": false
+        }, 
+        {
+            "player": 22, 
+            "rank": 3, 
+            "score": 180, 
+            "made_bid": false
+        }, 
+        {
+            "player": 23, 
+            "rank": 3, 
+            "score": 0, 
+            "made_bid": false
+        }
+    ], 
+    
+    "bids": [
+        {
+            "caller":4, 
+            "partners": [ 20, 22 ],
+            "opponents": [ 21, 19, 23 ], 
+            "points_bid": 150, 
+            "points_made": 180,
+            "hand_number": 1
+        }
+    ]
+}
+    

@@ -32,6 +32,9 @@ urlpatterns = patterns('',
     url(r'^players/', views.players, name='players'),
     url(r'^player/(?P<player_id>\d+)/$', views.player, name='player'),
 
+    url(r'^seasons/', views.seasons, name='seasons'),
+#    url(r'^season/(?P<season_start>\w+)/$', views.season, name='season'),
+    
     url(r'^awards/', views.awards, name='awards'),
 
     url(r'^api/games/$', views.GameList.as_view(), name='api-games'),
