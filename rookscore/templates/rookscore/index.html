@@ -2,7 +2,7 @@
 
 {% block body %}
 <div class="col-lg-6">
-    <h3>{{ season }} Standings</h3>
+    <h3>{% if season %}{{ season }}{% else %} All Time{% endif %} Standings</h3>
 
     {% if rankings.player_list %}
         {% include "rookscore/standings_table.html" %}

@@ -1,0 +1,32 @@
+To Do:
+
+Award Ideas:
+
+Gold - Top Rating
+Silver - 2nd
+Bronze - 3rd
+
+Sum-Game-based:
+Always a bridesmaid
+ - Most likely to finish second
+Coattail rider
+ - Games that would have been one with a star
+Hypothetical Winner
+ - % of games finished within 180 points
+ 
+Single-game-based (also store an associated game)
+Domination:
+ - Largest gap to second place
+ 
+Flawless Victory:
+ - Most games won without going down
+ 
+Partner-based:
+Dynamic Duo
+ - Call percentage in pairs
+Alone Ranger
+ - Call percentage alone
+Sure bet
+ - Call percentage
+
+

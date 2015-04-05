@@ -4,8 +4,10 @@ from django.shortcuts import render
 from django.forms.formsets import formset_factory
 
 from rookscore.forms import PlayerForm
-from rookscore.models import Player, Game, PlayerGameSummary, Bid, SeasonManager
+from rookscore.models import Player, Game, PlayerGameSummary, Bid
 from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
+from rookscore.caches.cache_manager import CacheManager
+from rookscore.caches.seasons import SeasonCache
 from rookscore import settings
 
 from rest_framework import status
@@ -16,11 +18,11 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework import permissions
 
-import datetime
+from datetime import datetime
 from rookscore import utils
 
 def index(request):
-    season = SeasonManager().current()
+    season = CacheManager().seasons().get(datetime.today())
     rankings = Player.objects.rankings(season)
     recent_game_list = Game.objects.order_by('-played_date')[:5]
     template = loader.get_template('rookscore/index.html')
@@ -42,7 +44,7 @@ def entry(request):
             
             game = Game()
             game.played_date = form.cleaned_data['game_date']
-            game.entered_date = datetime.datetime.now()
+            game.entered_date = datetime.now()
             game.save()
             
             summaries = []
@@ -92,12 +94,19 @@ def entry(request):
 '''
 
 def games_repair(request):
+    # Ensure everyone has the right rank
     for g in Game.objects.all():
         summaries = list(g.scores.all())
         utils.sortAndRankSummaries(summaries)
 
         for s in summaries:
             s.save()
+            
+    # Update all of the Elo scores
+    seasons = CacheManager().seasons().all()
+    for s in seasons:
+        Player.objects.rankings(s)
+    
     return HttpResponse("<html><body>Repair complete.</body></html>")
 
     
@@ -122,7 +131,7 @@ def game(request, game_id):
     return HttpResponse("You have requested game #" + str(game_id))
 
 def seasons(request):
-    seasons = SeasonManager().all()
+    seasons = CacheManager().seasons().all()
     template = loader.get_template('rookscore/seasons.html')
     context = RequestContext(request, {
         'seasons': seasons,
@@ -167,10 +176,10 @@ def player(request, player_id):
         })
 
 def awards(request):
-    award_list = []
+    awards = CacheManager().awards().all()
     template = loader.get_template('rookscore/awards.html')
     context = RequestContext(request, {
-        'award_list': award_list,
+        'awards': awards,
     })
     return HttpResponse(template.render(context))
 
