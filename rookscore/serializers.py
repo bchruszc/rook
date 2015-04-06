@@ -17,7 +17,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
     serializer_class = PlayerSerializer
 
 class ScoreSerializer(serializers.ModelSerializer):
-    player = serializers.PrimaryKeyRelatedField()
+    player = serializers.PrimaryKeyRelatedField(read_only=True)
     
     class Meta:
         model = PlayerGameSummary
