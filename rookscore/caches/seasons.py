@@ -6,6 +6,8 @@ from datetime import datetime
 from datetime import date
 from datetime import timedelta
 
+import sys
+
 SEASON_CHOICES = (
     (1, 'Winter'),
     (2, 'Spring'),
@@ -109,7 +111,10 @@ class SeasonCache():
         return s
         
     def all(self):
-        return sorted(self.seasons.values(), cmp=season_compare)
-    
+        if sys.version < '3.0':
+            return sorted(self.seasons.values(), cmp=season_compare)
+        else:
+            return sorted(self.seasons.values(), key=season_compare)
+            
 def season_compare(x, y):
     return x.sort_key - y.sort_key
