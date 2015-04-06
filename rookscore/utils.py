@@ -5,12 +5,6 @@ def _getScore(summary):
         return 10000 + summary.score
     return summary.score
     
-def season_compare(x, y):
-    return x.sort_key - y.sort_key
-    
-def season_compare_desc(x, y):
-    return y.sort_key - x.sort_key
-    
 def sortAndRankSummaries(summaries):
     summaries.sort(reverse=True, key=_getScore)
     

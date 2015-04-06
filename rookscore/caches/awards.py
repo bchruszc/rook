@@ -18,7 +18,7 @@ class Award:
     season_winners = {} # Tuple of season -> list of winners
 
     def sorted_season_winners(self):
-        sorted_keys = sorted(self.season_winners.keys(), cmp=utils.season_compare_desc)
+        sorted_keys = sorted(self.season_winners.keys(), key=lambda x: x.sort_key)
         
         results = []
         for k in sorted_keys:
@@ -63,7 +63,7 @@ class SeasonChampionAward(Award):
             if not found:
                 winners.append(AwardWinner(players=[score.player], values=[score.rating]))
         
-        self.season_winners[season] = sorted(winners, cmp=compare_winners_desc)
+        self.season_winners[season] = sorted(winners, key=lambda x: x.values[0], reverse=True)
 
 def compare_winners_desc(w1, w2):
     # Sort within values

@@ -111,10 +111,4 @@ class SeasonCache():
         return s
         
     def all(self):
-        if sys.version < '3.0':
-            return sorted(self.seasons.values(), cmp=season_compare)
-        else:
-            return sorted(self.seasons.values(), key=season_compare)
-            
-def season_compare(x, y):
-    return x.sort_key - y.sort_key
+        return sorted(self.seasons.values(), key=lambda x: x.sort_key)
