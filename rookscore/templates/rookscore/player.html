@@ -43,10 +43,18 @@
                             {% endfor %}
 
                         </tr>
-                        
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="row">
+                {% for award in player_awards %}
+                    {% if award.winner.trophy_url %}
+                    <div class="col-lg-4">
+                    {% include "rookscore/award_badge.html" %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
         <div class="col-lg-3">

@@ -167,19 +167,43 @@ def player(request, player_id):
             finishes[num_players-4][score.rank] = finishes[num_players-4][score.rank] + 1
             finishes[3][score.rank] = finishes[3][score.rank] + 1
     
+    all_awards = CacheManager().awards().all()
+    player_awards = []
+    
+    for award in all_awards:
+        for season, winners in award.season_winners.items():
+            # if season == SeasonCache().get(datetime.today()) and award.full_season_required:
+            #     # Exclude seasonal awards that are in progress
+            #     continue
+            
+            for winner in winners:
+                if player in winner.players:
+                    player_awards.append({
+                        'award': award,
+                        'season': season,
+                        'winner': winner,
+                        })
+
+    player_awards.sort(key=lambda x : x['season'].sort_key if x['season'] else 0, reverse=True)
+    current_season = SeasonCache().get(datetime.today())
+
     return render(request, 'rookscore/player.html', 
         {
             'player': player,
             'all_players': all_players,
             'recent_games': recent_games,
             'finishes': finishes,
+            'player_awards': player_awards,
+            'current_season': current_season
         })
 
 def awards(request):
     awards = CacheManager().awards().all()
+    current_season = SeasonCache().get(datetime.today())
     template = loader.get_template('rookscore/awards.html')
     context = RequestContext(request, {
         'awards': awards,
+        'current_season': current_season
     })
     return HttpResponse(template.render(context))
 

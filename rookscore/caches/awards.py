@@ -5,20 +5,24 @@ class AwardWinner:
     players = []
     values = []
     linked_games = []
+    rank = 100
     
     def __init__(self, players, values, linked_games=None):
         # self.award = award
         self.players = players
         self.values = values
         self.linked_games = linked_games
+        self.rank = None
+        self.trophy_url = None
 
 class Award:
     icon_url = None
     name = "Empty Award"
     season_winners = {} # Tuple of season -> list of winners
+    full_season_required = False
 
     def sorted_season_winners(self):
-        sorted_keys = sorted(self.season_winners.keys(), key=lambda x: x.sort_key)
+        sorted_keys = sorted(self.season_winners.keys(), key=lambda x: x.sort_key, reverse=True)
         
         results = []
         for k in sorted_keys:
@@ -34,8 +38,9 @@ class Award:
 
 class SeasonChampionAward(Award):
     def __init__(self):
-        self.icon_url = None
-        self.name = "Season Champion Award"
+        self.icon_url = '/static/img/goldtrophy.png'
+        self.name = "Season Champion"
+        self.full_season_required = True
     
     def add(self, game, seasons):
         # Assume that the ratings are current
@@ -64,6 +69,18 @@ class SeasonChampionAward(Award):
                 winners.append(AwardWinner(players=[score.player], values=[score.rating]))
         
         self.season_winners[season] = sorted(winners, key=lambda x: x.values[0], reverse=True)
+        utils.rank(self.season_winners[season], key=lambda x: x.values[0])
+        
+        for winner in self.season_winners[season]:
+            if winner.rank == 1:
+                winner.trophy_url = '/static/img/goldtrophy.png'
+            elif winner.rank == 2:
+                winner.trophy_url = '/static/img/silvertrophy.png'
+            elif winner.rank == 3:
+                winner.trophy_url = '/static/img/bronzetrophy.png'
+            else:
+                winner.trophy_url = None
+
 
 def compare_winners_desc(w1, w2):
     # Sort within values
