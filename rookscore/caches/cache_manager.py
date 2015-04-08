@@ -42,7 +42,7 @@ class AwardCacheBuilder:
         
         ac = AwardCache()
         
-        for g in games:
+        for g in games.order_by('played_date'):
             for a in ac.all_awards:
                 a.add(g, all_seasons)
 
