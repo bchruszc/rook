@@ -9,9 +9,11 @@ def _getScore(summary):
 def rank(sorted_list, key):
     last_value = None
     last_rank = None
-    count = 1
+    count = 0
 
     for item in sorted_list:
+        count = count + 1
+
         value = key(item)
         if value == last_value:
             # It's a tie, give the last rank
@@ -19,8 +21,10 @@ def rank(sorted_list, key):
             continue
         
         item.rank = count
+        
         last_rank = count
-        count = count + 1
+        last_value = value
+        
 
 def sortAndRankSummaries(summaries):
     summaries.sort(reverse=True, key=_getScore)

@@ -5,79 +5,94 @@
 
 {% block body %}
 
-    <h3>Awards Page</h3>
+<h3>Awards Page</h3> {% if awards %} 
 
-    {% if awards %}
-        
-        {% for award in awards %}
-        
-        <div class="lg-col-4">
-            <div class="panel panel-primary">
-                  <div class="panel-heading">
-
-                    <h2 class="panel-title ">
+<div class="row">
+{% for award in awards %}
+    <div class="col-lg-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+    
+                <h2 class="panel-title ">
                       {% if award.icon_url %}
                       <img src="{{ award.icon_url }}" style="height:36px;"/>
                       {% endif %}
-                        {{ award }}</h2>
-                  </div>
-                  <div class="panel-body">
-                    <table class="table table-striped table-hover ">
-                        <thead>
+                        {{ award }}
+                </h2>
+            </div>
+    
+            <div>
+                <table class="table table-striped table-hover ">
+                    <thead>
+                        <tr>
+                            <th>
+                                Season
+                            </th>
+                            <th>
+                                Player
+                            </th>
+                            <th>
+                                {{ award.value_description }}
+                            </th>
+                            <!--<th>-->
+                                
+                            <!--</th>-->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for season, winners in award.sorted_season_winners %}
                             <tr>
-                                <th>
-                                    Season
-                                </th>
-                                <th>
-                                    Player
-                                </th>
-                                <th>
-                                    Rating
-                                </th>
+                                <td>
+                                    {{ season }} {% if season == current_season %}(Current Leader){% endif %}
+                                </td>
+        
+                                <td>
+                                    <a href="/player/{{ winners.0.players.0.id }}">
+                                        {{ winners.0.players.0 }}
+                                    </a>
+                                    
+                                    <!--<ul>-->
+                                    <!--{% for winner in winners %}-->
+                                    <!--{% for player in winner.players %}-->
+                                    <!--<li>-->
+                                    <!--<a href="/player/{{ player.id }}">-->
+                                    <!--    {{ player }}-->
+                                    <!--</a>-->
+                                    <!--</li>-->
+                                    <!--{% endfor %}-->
+                                    <!--{% endfor %}-->
+                                    <!--</ul>-->
+        
+                                </td>
+                                <td>
+                                    {{ winners.0.display }}
+                                    <!--<div class="collapse" id="collapseExample{{ forloop.counter }}">-->
+                                    <!--    <ul>-->
+                                    <!--    {% for winner in winners %}-->
+                                    <!--        <li>-->
+                                    <!--        #{{ winner.rank }} - {{ winner.display }}-->
+                                    <!--        </li>-->
+                                    <!--    {% endfor %}-->
+                                    <!--    </ul>-->
+                                    <!--</div>-->
+                                </td>
+                                <!--<td>-->
+                                <!--    <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample{{ forloop.counter }}" aria-expanded="false" aria-controls="collapseExample">-->
+                                <!--        More-->
+                                <!--    </a>-->
+                                <!--</td>-->
+                                
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for season, winners in award.sorted_season_winners %}
-                                <tr>
-                                    <td>
-                                        {{ season }} {% if season == current_season %}(Current Leader){% endif %}
-                                    </td>
-                                    <td>
-                                        <a href="/player/{{ winners.0.players.0.id }}">
-                                            {{ winners.0.players.0 }}
-                                        </a>                       
-                                        <!-- Full table data is available for later
-                                        {% for winner in winners %}
-                                        {% for player in winner.players %}
-                                        <a href="/player/{{ player.id }}">
-                                            {{ player }}
-                                        </a>
-                                        {% endfor %}
-                                        {% endfor %}
-                                        -->
-                                    </td>
-                                    <td>
-                                        {{ winners.0.values.0 }}
-                                        <!-- Full tabls data is available for later
-                                        {% for winner in winners %}
-                                        {% for value in winner.values %}
-                                            {{ value }}
-                                        {% endfor %} 
-                                        {% endfor %} 
-                                        -->
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        {% endfor %}
-        </ul>
+    </div>
+{% endfor %}
+</div>
+</ul>
 
-    {% else %}
-    <p>No awards are available yet</p>
-    {% endif %}
-
-{% endblock %}
+{% else %}
+<p>No awards are available yet</p>
+{% endif %} {% endblock %}

@@ -1,25 +1,27 @@
 from rookscore import utils
 
-class AwardWinner:
-    # award = None
-    players = []
-    values = []
-    linked_games = []
-    rank = 100
-    
-    def __init__(self, players, values, linked_games=None):
+import operator
+
+class AwardWinner(object):
+    def __init__(self, players, values, display_value, linked_games=None):
         # self.award = award
         self.players = players
         self.values = values
         self.linked_games = linked_games
         self.rank = None
         self.trophy_url = None
+        self.display_value = display_value
+        
+    def display(self):
+        return self.display_value(self.values)
 
-class Award:
-    icon_url = None
-    name = "Empty Award"
-    season_winners = {} # Tuple of season -> list of winners
-    full_season_required = False
+class Award(object):
+    def __init__(self, display_value=lambda values : str(values[0])):
+        self.icon_url = '/static/img/goldmetal.png'
+        self.name = "Empty Award"
+        self.season_winners = {} # Tuple of season -> list of winners
+        self.full_season_required = False
+        self.display_value = display_value
 
     def sorted_season_winners(self):
         sorted_keys = sorted(self.season_winners.keys(), key=lambda x: x.sort_key, reverse=True)
@@ -36,8 +38,63 @@ class Award:
     def __str__(self):
         return self.name
 
+class GameCountAward(Award):
+    def __init__(self, should_count, calc_value=lambda count, games : count, get_url=lambda rank, values : None, reverse=True, display_value=lambda values : values[0]):
+        #super(GameCountAward, self).__init__()
+        super(GameCountAward, self).__init__(display_value=display_value)
+        
+        self.should_count = should_count
+        self.calc_value = calc_value
+        self.get_url = get_url
+        self.season_counts = {}
+        self.season_game_counts = {}
+    
+    def add(self, game, seasons):
+        # Assume that the ratings are current
+        for season in seasons:
+            if season and (season.start_date > game.played_date.date() or season.end_date < game.played_date.date()):
+                continue
+            
+            self.add_to_season(game, season)
+    
+    def add_to_season(self, game, season):
+        counts = self.season_counts.get(season, {})
+        game_counts = self.season_game_counts.get(season, {})
+        
+        # Add the contents of this game to the counts
+        for s in game.scores.all():
+            # Get the counts for this player, defaulting to zero
+            p_count = counts.get(s.player, 0)
+            g_count = game_counts.get(s.player, 0)
+
+            g_count = g_count + 1
+            if self.should_count(s, game):
+                p_count = p_count + 1
+
+            counts[s.player] = p_count
+            game_counts[s.player] = g_count
+                
+        # Convert the counts to the winners format
+        winners = []
+        
+        for player, count in counts.items():
+            winners.append(AwardWinner([player], [self.calc_value(count, game_counts[player])], self.display_value ))
+        
+        winners.sort(key=lambda x: x.values[0], reverse=True)
+        utils.rank(winners, key=lambda x: x.values[0])
+        
+        # Assign icons based on rank
+        for winner in winners:
+            winner.trophy_url = self.get_url(winner.rank, winner.values)
+
+        # Set the main award types
+        self.season_winners[season] = winners
+        self.season_counts[season] = counts
+        self.season_game_counts[season] = game_counts
+
 class SeasonChampionAward(Award):
     def __init__(self):
+        super(SeasonChampionAward, self).__init__()
         self.icon_url = '/static/img/goldtrophy.png'
         self.name = "Season Champion"
         self.full_season_required = True
@@ -45,13 +102,13 @@ class SeasonChampionAward(Award):
     def add(self, game, seasons):
         # Assume that the ratings are current
         for season in seasons:
+            if season and (season.start_date > game.played_date.date() or season.end_date < game.played_date.date()):
+                continue
+            
             self.add_to_season(game, season)
     
     def add_to_season(self, game, season):
         # Check if it belongs in this season
-        if season and (season.start_date > game.played_date.date() or season.end_date < game.played_date.date()):
-            return
-        
         winners = self.season_winners.get(season, [])
         
         if not winners:
@@ -66,7 +123,7 @@ class SeasonChampionAward(Award):
                     found = True
 
             if not found:
-                winners.append(AwardWinner(players=[score.player], values=[score.rating]))
+                winners.append(AwardWinner(players=[score.player], values=[score.rating], display_value=self.display_value))
         
         self.season_winners[season] = sorted(winners, key=lambda x: x.values[0], reverse=True)
         utils.rank(self.season_winners[season], key=lambda x: x.values[0])
@@ -108,5 +165,34 @@ class AwardCache:
         self.all_awards = []
         self.all_awards.append(SeasonChampionAward())
         
+        award = GameCountAward(should_count=lambda score, game : score.rank == 2, get_url=url_first_only)
+        award.name = 'Always a Bridesmaid'
+        self.all_awards.append(award)
+
+        award = GameCountAward(should_count=lambda score, game : score.rank == 2, calc_value=calc_percent, get_url=url_first_only)
+        award.name = 'Always a Bridesmaid Percentage'
+        self.all_awards.append(award)
+        
+        award = GameCountAward(should_count=lambda score, game : score.rank != 1 and score.score > game.scores.all()[0].score - 180, get_url=url_first_only)
+        award.name = 'Hypothetical Winner'
+        self.all_awards.append(award)
+
+        award = GameCountAward(should_count=lambda score, game : not score.made_bid and score.score > game.scores.all()[0].score, get_url=url_first_only)
+        award.name = 'Star Stuck'
+        self.all_awards.append(award)
+
+        award = GameCountAward(should_count=lambda score, game : score.rank == 1, calc_value=calc_percent, get_url=url_first_only, display_value=lambda values : str(values[0]) + '%')
+        award.name = 'Win Percentage'
+        self.all_awards.append(award)
+        
     def all(self):
         return self.all_awards
+        
+def url_first_only(rank, values):
+    if rank == 1 and values[0] > 0:
+        return '/static/img/goldmetal.png'
+    else:
+        return None
+        
+def calc_percent(count, game_count):
+    return 100 * count / game_count
