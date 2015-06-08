@@ -51,4 +51,57 @@
         }
     ]
 }
+
+{
+        "played_date": "2015-06-01T00:00:00Z",
+        "scores": [
+            {
+                "player": {
+                    "player_id": 1
+                },
+                "score": 360,
+                "made_bid": true
+            },
+            {
+                "player": {
+                    "player_id": 2
+                },
+                "score": 180,
+                "made_bid": true
+            },
+            {
+                "player": {
+                    "player_id": 3
+                },
+                "score": 265,
+                "made_bid": false
+            },
+            {
+                "player": {
+                    "player_id": 4
+                },
+                "score": 275,
+                "made_bid": false
+            }
+        ],
+      "bids": [
+          {
+              "caller":1, 
+              "partners": [ 2 ],
+              "opponents": [ 3, 4 ], 
+              "points_bid": 150, 
+              "points_made": 180,
+              "hand_number": 1
+          },
+        
+          {
+              "caller":2, 
+              "partners": [ 3 ],
+              "opponents": [ 1, 4 ], 
+              "points_bid": 175, 
+              "points_made": 180,
+              "hand_number": 2
+          }
+      ]
+    }
     

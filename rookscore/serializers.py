@@ -39,6 +39,8 @@ class GameSerializer(serializers.ModelSerializer):
     bids = BidSerializer(many=True)
 
     def create(self, validated_data):
+        print '***** SERIALIZING GAME ********'
+
         scores_data = validated_data.pop('scores')
         bids_data = validated_data.pop('bids')
         game = Game.objects.create(**validated_data)
@@ -48,6 +50,7 @@ class GameSerializer(serializers.ModelSerializer):
             Bid.objects.create(game=game, **bid_data)
         for score_data in scores_data:    
             player_data = score_data.pop('player')
+            print 'Player Data:', player_data
             player = Player.objects.get(player_id=player_data['player_id'])
             summary = PlayerGameSummary.objects.create(game=game, player=player, **score_data)
             summaries.append(summary)

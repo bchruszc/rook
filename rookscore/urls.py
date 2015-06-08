@@ -7,6 +7,8 @@ from rookscore import views
 from rookscore import settings
 from rookscore.models import Player, Game
 
+from rookscore.rest import PlayerResource, GameResource
+
 admin.autodiscover()
 
 # Routers provide an easy way of automatically determining the URL conf.
@@ -51,4 +53,8 @@ urlpatterns = patterns('',
 
    #url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    
+    url(r'^api2/players/', include(PlayerResource.urls())),
+    url(r'^api2/games/', include(GameResource.urls())),
+
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
