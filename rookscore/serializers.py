@@ -39,7 +39,7 @@ class GameSerializer(serializers.ModelSerializer):
     bids = BidSerializer(many=True)
 
     def create(self, validated_data):
-        print '***** SERIALIZING GAME ********'
+        #print '***** SERIALIZING GAME ********'
 
         scores_data = validated_data.pop('scores')
         bids_data = validated_data.pop('bids')

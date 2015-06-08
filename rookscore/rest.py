@@ -71,7 +71,7 @@ class GameResource(DjangoResource):
     # POST /api2/games/
     @transaction.commit_on_success
     def create(self):
-        print self.data        
+        #print self.data        
 
         # Validate this game
         played_date = self.data['played_date']
@@ -94,16 +94,16 @@ class GameResource(DjangoResource):
             raise Exception('either "bids" or "scores" must be specified')
 
         if scores and len(scores) > 0:
-            print 'Computing scores...'
+            #print 'Computing scores...'
 
             for s in scores:
                 p = plyr(s['player']['player_id'])
                 new_scores.append(PlayerGameSummary(player=p, game=new_game, score=s['score'], made_bid=s['made_bid']))
 
         if bids and len(bids) > 0:
-            print 'Computing bids...'
+            #print 'Computing bids...'
             for b in bids:
-                print 'Bid: ', b
+                #print 'Bid: ', b
                 new_bid = Bid()
                 new_bid.game = new_game
                 new_bid.points_bid = b['points_bid']
@@ -127,17 +127,17 @@ class GameResource(DjangoResource):
                 # TODO!
                 pass
    
-        print 'Game validated:'
-        print new_game
+        #print 'Game validated:'
+        #print new_game
         
         utils.sortAndRankSummaries(new_scores)
 
         for s in new_scores:
-            print s
+            #print s
             s.game = new_game
             s.save()
         for b in new_bids:
-            print b
+            #print b
             b.game = new_game
             b.save()
 
