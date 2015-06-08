@@ -5,7 +5,7 @@ from django.forms.formsets import formset_factory
 
 from rookscore.forms import PlayerForm
 from rookscore.models import Player, Game, PlayerGameSummary, Bid
-from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
+#from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
 from rookscore.caches.cache_manager import CacheManager
 from rookscore.caches.seasons import SeasonCache
 from rookscore import settings
@@ -207,7 +207,7 @@ def awards(request):
     })
     return HttpResponse(template.render(context))
 
-
+'''
 #
 # APIS
 #
@@ -265,3 +265,4 @@ class BidList(generics.ListCreateAPIView):
     
     queryset = Bid.objects.all()
     serializer_class = BidSerializer
+'''
