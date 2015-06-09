@@ -60,7 +60,7 @@ class GameResource(DjangoResource):
         if 'HTTP_API_KEY' in self.request.META.keys():
             key = self.request.META['HTTP_API_KEY']
             if key == '12345':
-                print 'Secure:', key;
+               # print 'Secure:', key;
                 return True
                 
         # TODO: Don't always return true!!
