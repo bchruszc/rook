@@ -110,7 +110,7 @@ class GameResource(DjangoResource):
             #print 'Computing scores...'
 
             for s in scores:
-                p = plyr(s['player']['player_id'])
+                p = plyr(s['player']['id'])
                 new_scores.append(PlayerGameSummary(player=p, game=new_game, score=s['score'], made_bid=s['made_bid']))
 
         if bids and len(bids) > 0:
