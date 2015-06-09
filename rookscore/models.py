@@ -13,10 +13,12 @@ class Rankings:
     player_list = []
 
 class GameManager(models.Manager):
+    #pylint: disable=maybe-no-member
     def season(self, season):
         return Game.objects.filter(played_date__gte=season.start_date, played_date__lte=season.end_date)
 
 class PlayerManager(models.Manager):
+    #pylint: disable=maybe-no-member
     def rankings(self, season=None):
         games = None
         if season:

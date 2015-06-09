@@ -7,30 +7,44 @@ This class defines the API for the application
 from django.db import transaction
 from restless.dj import DjangoResource
 from restless.preparers import FieldsPreparer
+from restless.serializers import JSONSerializer
 
 from rookscore.models import Player, Game, PlayerGameSummary, Bid
 from rookscore import utils
 from datetime import datetime
 import json
 
+# A serializer that strips out the object map surrounding lists
+class NoWrapSerializer(JSONSerializer):
+    
+    def serialize(self, data):
+        if isinstance(data, dict) and 'objects' in data.keys():
+            data = data['objects']
+
+        return JSONSerializer.serialize(self, data)
+        
 class PlayerResource(DjangoResource):
+    serializer = NoWrapSerializer()
+    
     # exposed_name : internal_name
     preparer = FieldsPreparer(fields={
         'id': 'id',
-        #'player_id',
+        'player_id': 'player_id',
         'first_name': 'first_name',
         'last_name': 'last_name',
     })
 
     # GET /api2/players/
     def list(self):
-        return Player.objects.all()
+        return list(Player.objects.all())
 
     # GET /api2/posts/<pk>/
     def detail(self, pk):
         return Player.objects.get(id=pk)
         
 class GameResource(DjangoResource):
+    serializer = NoWrapSerializer()
+    
     # exposed_name : internal_name
     preparer = FieldsPreparer(fields={
         'id': 'id',
@@ -40,19 +54,18 @@ class GameResource(DjangoResource):
         'scores': 'scores_loaded',
     })
     
-        # Add this!
+    # Add this (API key)
+    #pylint: disable=maybe-no-member
     def is_authenticated(self):
-        # Alternatively, if the user is logged into the site...
-        return self.request.user.is_authenticated()
-
-        # Alternatively, you could check an API key. (Need a model for this...)
-        # from myapp.models import ApiKey
-        # try:
-        #     key = ApiKey.objects.get(key=self.request.GET.get('api_key'))
-        #     return True
-        # except ApiKey.DoesNotExist:
-        #     return False
-
+        if 'HTTP_API_KEY' in self.request.META.keys():
+            key = self.request.META['HTTP_API_KEY']
+            if key == '12345':
+                print 'Secure:', key;
+                return True
+                
+        # TODO: Don't always return true!!
+        return True
+            
     # GET /api2/games/
     def list(self):
         games = Game.objects.all()
@@ -60,7 +73,7 @@ class GameResource(DjangoResource):
         for g in games:
             serialize_game(g)
             
-        return games
+        return list(games)
 
     # GET /api2/games/<pk>/
     def detail(self, pk):
