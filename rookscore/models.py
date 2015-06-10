@@ -55,6 +55,10 @@ class PlayerManager(models.Manager):
         
         return rankings
 
+class CumulativeRound:
+    points = []
+    description = ''
+
 class Game(models.Model):
     objects = GameManager()
 
@@ -62,6 +66,60 @@ class Game(models.Model):
 
     # Generated Automatically
     entered_date = models.DateTimeField('date entered')
+    
+    def rounds(self):
+        # Get the order based on the order of the scores, then build the table
+        totals = {}
+        players = []
+        
+        for score in self.scores.all():
+            players.append(score.player)
+            totals[score.player] = 0
+
+        rounds = []
+        
+        for bid in self.bids.all():
+            r = CumulativeRound()
+            round_total = {}
+            r.points = []  #in order by rank
+            # If the bid was made
+            
+            if bid.points_made >= bid.points_bid:
+                round_total[bid.caller] = totals[bid.caller] + bid.points_made
+                
+                for p in bid.partners.all():
+                    round_total[p] = totals[p] + bid.points_made
+
+                for p in bid.opponents.all():
+                    round_total[p] = totals[p] + (180 - bid.points_made)
+
+            # If not...
+            else:
+                round_total[bid.caller] = totals[bid.caller] - bid.points_bid
+                
+                for p in bid.partners.all():
+                    round_total[p] = totals[p] - bid.points_bid
+
+                for p in bid.opponents.all():
+                    round_total[p] = totals[p] + (180 - bid.points_made)
+        
+            for p in players:
+                if p in round_total.keys():
+                    r.points.append(round_total[p])
+                    totals[p] = round_total[p]
+                else:
+                    r.points.append(totals[p])
+            
+            partners = []
+            for p in bid.partners.all():
+                partners.append(p.initials()) 
+                
+            r.description = str(bid.caller.initials()) + ' ' + str(bid.points_bid) + ' ' + ', '.join(partners)
+            r.bid = bid
+            rounds.append(r)
+        
+        return rounds
+        
     
     def __str__(self):              # __unicode__ on Python 2
         return 'Game played on ' + str(self.played_date)
@@ -74,6 +132,9 @@ class Player(models.Model):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     objects = PlayerManager()
+    
+    def initials(self):
+        return self.first_name[0] + self.last_name[0]
     
     def __str__(self):              # __unicode__ on Python 2
         return str(self.first_name) + ' ' + str(self.last_name)
