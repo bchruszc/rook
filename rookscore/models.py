@@ -103,19 +103,22 @@ class Game(models.Model):
                 for p in bid.opponents.all():
                     round_total[p] = totals[p] + (180 - bid.points_made)
         
+            # Collect it all
             for p in players:
                 if p in round_total.keys():
-                    r.points.append(round_total[p])
+                    r.points.append((p, round_total[p]))
                     totals[p] = round_total[p]
                 else:
-                    r.points.append(totals[p])
+                    r.points.append((p, totals[p]))
             
             partners = []
             for p in bid.partners.all():
                 partners.append(p.initials()) 
                 
             r.description = str(bid.caller.initials()) + ' ' + str(bid.points_bid) + ' ' + ', '.join(partners)
+            r.made = bid.points_made >= bid.points_bid
             r.bid = bid
+            r.players = players
             rounds.append(r)
         
         return rounds

@@ -14,10 +14,13 @@
             <div class="panel-heading">
     
                 <h2 class="panel-title ">
-                      {% if award.icon_url %}
-                      <img src="{{ award.icon_url }}" style="height:36px;"/>
-                      {% endif %}
-                        {{ award }}
+                    {% if award.icon_url %}
+                    <img src="{{ award.icon_url }}" style="height:36px;"/>
+                    {% endif %}
+                    {{ award }}
+                    <a data-toggle="collapse" data-target=".award-{{forloop.counter}}">
+                        (all)
+                    </a>
                 </h2>
             </div>
     
@@ -41,7 +44,11 @@
                     </thead>
                     <tbody>
                         {% for season, winners in award.sorted_season_winners %}
+                            {% if forloop.first %}
                             <tr>
+                            {% else %}
+                            <tr class="collapse award-{{forloop.parentloop.counter}}">
+                            {% endif %}
                                 <td>
                                     {{ season }} {% if season == current_season %}(Current Leader){% endif %}
                                 </td>

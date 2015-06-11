@@ -4,14 +4,12 @@
     </div>
 
     <div class="panel-body">
-
-    {% if game.bids.all|length > 0 %} 
         <table class="table table-striped table-hover ">
             <thead>
                 {% for score in game.scores.all %}
                 
                 <th>
-                    {{ score.player.initials }} <br> {{ score.score }}{% if score.made_bid %} * {% endif %}
+                    <a href="/player/{{ score.player.id }}/">{{ score.player.initials }}</a> <br> {{ score.score }}{% if score.made_bid %} * {% endif %}
                     <br>
                     {% if score.rating_change >= 0 %}
                     <span class="score_up">(+{{ score.rating_change }})</span> {% else %}
@@ -19,29 +17,48 @@
                 </th>
                 
                 {% endfor %}
+                
+                <th>
+                    {% if game.bids.all|length > 0 %}
+                    <button type="button" class="btn" data-toggle="collapse" data-target="#game-{{game.id}}">
+                        Rounds
+                    </button>
+                    {% endif %}
+                </th>
             </thead>
             
-            <tbody>
+            <tbody id="game-{{game.id}}" class="collapse">
                 {% for round in game.rounds %}
                 <tr>
-                    {% for points in round.points %}
-                    <td>
+                    {% for player, points in round.points %}
+
+                    <td class=
+                        "
+                        {% if player == round.bid.caller %}bid_caller{% endif %}
+                        {% if player in round.bid.partners.all or player == round.bid.caller %}
+                            {% if round.made %}
+                            bid_up
+                            {% else %}
+                            bid_down
+                            {% endif %}
+                        {% endif %}
+
+                        ">
                         {{ points }}
                     </td>
                     {% endfor %}
                     
-                    {% if round.bid.points_made >= round.bid.points_bid %}
-                        <td> {{ round.description }}  <span class="score_up">({{ round.bid.points_made }})</span></td>
+                    {% if round.made %}
+                        <td> {{ round.description }}  <span class="bid_up">({{ round.bid.points_made }})</span></td>
                     {% else %}
-                        <td> {{ round.description }}  <span class="score_down">({{ round.bid.points_made }})</span></td>
+                        <td> {{ round.description }}  <span class="bid_down">({{ round.bid.points_made }})</span></td>
                     {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-    {% else %}
-    <!-- Old-school table for games with no round information -->
+    <!-- Old-school table for games with no round information
 
         <table class="table table-striped table-hover ">
             <thead>
@@ -84,7 +101,7 @@
             </tbody>
         </table>
 
-    {% endif %}
+    -->
     
     </div>
 

@@ -8,6 +8,19 @@
    font-size: 75%;
 }
 
+.bid_up {
+   color: green;
+}
+
+.bid_down {
+   color: red;
+}
+
+.bid_caller {
+      font-weight: bold;
+}
+
+
 .table td {
    text-align: center;   
 }
