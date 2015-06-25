@@ -238,7 +238,7 @@ class AwardCache:
             should_count=lambda score, game : score.rank == 2, 
             calc_value=calc_percent, 
             get_url=url_first_only,
-            display_value=lambda values : str(values[0]) + '%'
+            display_value=lambda values : str(round(values[0], 1)) + '%'
         )
         award.name = 'Always a Bridesmaid Percentage'
         self.all_awards.append(award)
@@ -263,7 +263,7 @@ class AwardCache:
             should_count=lambda score, bid : score.player == bid.caller, 
             calc_value=calc_percent,
             get_url=url_first_only, 
-            display_value=lambda values : str(values[0]) + '%'
+            display_value=lambda values : str(round(values[0], 1)) + '%'
         )
         award.name = 'Schoolyard Bully'
         award.description = 'Percentage of all bids called by this player'
@@ -275,7 +275,7 @@ class AwardCache:
             should_count=lambda score, bid : bid.points_made >= bid.points_bid,
             calc_value=calc_percent,
             get_url=url_first_only, 
-            display_value=lambda values : str(values[0]) + '%'
+            display_value=lambda values : str(round(values[0], 1)) + '%'
         )
         award.name = 'Fearless Leader'
         award.description = 'Percentage of bids made with this player as the caller'
@@ -287,7 +287,7 @@ class AwardCache:
             should_count=lambda score, bid : bid.points_made >= bid.points_bid,
             calc_value=calc_percent,
             get_url=url_first_only, 
-            display_value=lambda values : str(values[0]) + '%'
+            display_value=lambda values : str(round(values[0], 1)) + '%'
         )
         award.name = 'Partner in Crime'
         award.description = 'Percentage of bids made with this player as a partner'
