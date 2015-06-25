@@ -13,7 +13,7 @@
         <div class="panel panel-primary">
             <div class="panel-heading">
     
-                <h2 class="panel-title ">
+                <h2 class="panel-title " {% if award.description %}data-toggle="tooltip" data-placement="top auto" title="{{ award.description }}"{% endif %}>
                     {% if award.icon_url %}
                     <img src="{{ award.icon_url }}" style="height:36px;"/>
                     {% endif %}
@@ -29,7 +29,7 @@
                     <thead>
                         <tr>
                             <th>
-                                Season
+                                Rank
                             </th>
                             <th>
                                 Player
@@ -44,18 +44,20 @@
                     </thead>
                     <tbody>
                         {% for season, winners in award.sorted_season_winners %}
+                            {% if season == current_season %}
+                            {% for winner in winners %}
                             {% if forloop.first %}
                             <tr>
                             {% else %}
-                            <tr class="collapse award-{{forloop.parentloop.counter}}">
+                            <tr class="collapse award-{{forloop.parentloop.parentloop.counter}}">
                             {% endif %}
                                 <td>
-                                    {{ season }} {% if season == current_season %}(Current Leader){% endif %}
+                                   {{ winner.rank }}
                                 </td>
         
                                 <td>
-                                    <a href="/player/{{ winners.0.players.0.id }}">
-                                        {{ winners.0.players.0 }}
+                                    <a href="/player/{{ winner.players.0.id }}">
+                                        {{ winner.players.0 }}
                                     </a>
                                     
                                     <!--<ul>-->
@@ -72,7 +74,7 @@
         
                                 </td>
                                 <td>
-                                    {{ winners.0.display }}
+                                    {{ winner.display }}
                                     <!--<div class="collapse" id="collapseExample{{ forloop.counter }}">-->
                                     <!--    <ul>-->
                                     <!--    {% for winner in winners %}-->
@@ -90,6 +92,9 @@
                                 <!--</td>-->
                                 
                             </tr>
+                            
+                            {% endfor %}
+                            {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

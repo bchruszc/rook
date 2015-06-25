@@ -19,6 +19,7 @@ class Award(object):
     def __init__(self, display_value=lambda values : str(values[0])):
         self.icon_url = '/static/img/goldmetal.png'
         self.name = "Empty Award"
+        self.description = None
         self.season_winners = {} # Tuple of season -> list of winners
         self.full_season_required = False
         self.display_value = display_value
@@ -38,6 +39,7 @@ class Award(object):
     def __str__(self):
         return self.name
 
+# This type of award considers every game as a potential counter
 class GameCountAward(Award):
     def __init__(self, should_count, calc_value=lambda count, games : count, get_url=lambda rank, values : None, reverse=True, display_value=lambda values : values[0]):
         #super(GameCountAward, self).__init__()
@@ -91,6 +93,68 @@ class GameCountAward(Award):
         self.season_winners[season] = winners
         self.season_counts[season] = counts
         self.season_game_counts[season] = game_counts
+
+# An award based on round-by-round accumulation.  Works for counts and percentages.  Must supply one method to determine if a round could count, and another if it does count
+class RoundCountAward(Award):
+    def __init__(self, should_count, could_count, calc_value=lambda count, games : count, get_url=lambda rank, values : None, reverse=True, display_value=lambda values : values[0]):
+        #super(GameCountAward, self).__init__()
+        super(RoundCountAward, self).__init__(display_value=display_value)
+        
+        self.should_count = should_count    # Determine if this bid does count towards this award
+        self.could_count = could_count      # Determine if a given bid could have counted towards this award
+
+        self.calc_value = calc_value
+        self.get_url = get_url
+        self.season_counts = {}
+        self.season_round_totals = {} 
+
+    def add(self, game, seasons):
+        # Assume that the ratings are current
+        for season in seasons:
+            if season and (season.start_date > game.played_date.date() or season.end_date < game.played_date.date()):
+                continue
+            
+            self.add_to_season(game, season)
+            
+    def add_to_season(self, game, season):
+        counts = self.season_counts.get(season, {})
+        round_totals = self.season_round_totals.get(season, {})
+        
+        # Add the contents of this game to the counts
+        for s in game.scores.all():
+            for b in game.bids.all():
+                # Get the counts for this player, defaulting to zero
+                
+                if self.could_count(s, b):
+                    p_count = counts.get(s.player, 0)
+                    p_totals = round_totals.get(s.player, 0)
+        
+                    p_totals = p_totals + 1
+                    if self.should_count(s, b):
+                        p_count = p_count + 1
+        
+                    counts[s.player] = p_count
+                    round_totals[s.player] = p_totals
+                
+        # Convert the counts to the winners format
+        winners = []
+        
+        for player, count in counts.items():
+            # We can't assume that every player was eligible, like we can for games (since nobody is forced to bid!)
+            if round_totals[player] > 0:
+                winners.append(AwardWinner([player], [self.calc_value(count, round_totals[player])], self.display_value ))
+        
+        winners.sort(key=lambda x: x.values[0], reverse=True)
+        utils.rank(winners, key=lambda x: x.values[0])
+        
+        # Assign icons based on rank
+        for winner in winners:
+            winner.trophy_url = self.get_url(winner.rank, winner.values)
+
+        # Set the main award types
+        self.season_winners[season] = winners
+        self.season_counts[season] = counts
+        self.season_round_totals[season] = round_totals
 
 class SeasonChampionAward(Award):
     def __init__(self):
@@ -167,22 +231,66 @@ class AwardCache:
         
         award = GameCountAward(should_count=lambda score, game : score.rank == 2, get_url=url_first_only)
         award.name = 'Always a Bridesmaid'
+        award.description = 'Number of second place finishes'
         self.all_awards.append(award)
 
-        award = GameCountAward(should_count=lambda score, game : score.rank == 2, calc_value=calc_percent, get_url=url_first_only)
+        award = GameCountAward(
+            should_count=lambda score, game : score.rank == 2, 
+            calc_value=calc_percent, 
+            get_url=url_first_only,
+            display_value=lambda values : str(values[0]) + '%'
+        )
         award.name = 'Always a Bridesmaid Percentage'
         self.all_awards.append(award)
         
         award = GameCountAward(should_count=lambda score, game : score.rank != 1 and score.score > game.scores.all()[0].score - 180, get_url=url_first_only)
         award.name = 'Hypothetical Winner'
+        award.description = 'Number of games where the player was within 180 points of winning, which would have allowed Martin to win if one thing just went a little differently'
         self.all_awards.append(award)
 
         award = GameCountAward(should_count=lambda score, game : not score.made_bid and score.score > game.scores.all()[0].score, get_url=url_first_only)
         award.name = 'Star Stuck'
+        award.description = 'Number of games where the player would have won if they had a star'
         self.all_awards.append(award)
 
         award = GameCountAward(should_count=lambda score, game : score.rank == 1, calc_value=calc_percent, get_url=url_first_only, display_value=lambda values : str(values[0]) + '%')
         award.name = 'Win Percentage'
+        self.all_awards.append(award)
+        
+        # Percentage of time this player calls a bid
+        award = RoundCountAward(
+            could_count=lambda score, bid : True, 
+            should_count=lambda score, bid : score.player == bid.caller, 
+            calc_value=calc_percent,
+            get_url=url_first_only, 
+            display_value=lambda values : str(values[0]) + '%'
+        )
+        award.name = 'Schoolyard Bully'
+        award.description = 'Percentage of all bids called by this player'
+        self.all_awards.append(award)
+        
+        # Success percentage when bidding
+        award = RoundCountAward(
+            could_count=lambda score, bid : score.player == bid.caller, 
+            should_count=lambda score, bid : bid.points_made >= bid.points_bid,
+            calc_value=calc_percent,
+            get_url=url_first_only, 
+            display_value=lambda values : str(values[0]) + '%'
+        )
+        award.name = 'Fearless Leader'
+        award.description = 'Percentage of bids made with this player as the caller'
+        self.all_awards.append(award)
+
+        # Success percentage when partner
+        award = RoundCountAward(
+            could_count=lambda score, bid : score.player in bid.partners.all(), 
+            should_count=lambda score, bid : bid.points_made >= bid.points_bid,
+            calc_value=calc_percent,
+            get_url=url_first_only, 
+            display_value=lambda values : str(values[0]) + '%'
+        )
+        award.name = 'Partner in Crime'
+        award.description = 'Percentage of bids made with this player as a partner'
         self.all_awards.append(award)
         
     def all(self):
