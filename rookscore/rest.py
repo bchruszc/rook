@@ -19,6 +19,7 @@ from datetime import datetime
 
 import json
 import logging
+import sys
 
 logger = logging.getLogger('rook2_beta')
 
@@ -167,7 +168,8 @@ class GameResource(DjangoResource):
                 b.game = new_game
                 b.save()
                 
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             print(e)
             logger.error(e)
             raise e
