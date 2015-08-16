@@ -30,9 +30,17 @@ class PlayerManager(models.Manager):
         ratings = {}
 
         last_game = None
+        game_counts = {}
         
         for g in games:
             utils.update_elo(g, ratings)
+            
+            for s in g.scores.all():
+                if not s.player in game_counts.keys():
+                    game_counts[s.player] = 1
+                else:
+                    game_counts[s.player] = game_counts[s.player] + 1
+            
             last_game = g
         
         all_players = ratings.keys()
@@ -44,6 +52,7 @@ class PlayerManager(models.Manager):
         
         for p in all_players:
             p.rating_change = None
+            p.game_count = game_counts[p]
             for s in last_game.scores.all():
                 if p == s.player:
                     p.rating_change = s.rating_change

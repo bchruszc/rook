@@ -25,7 +25,7 @@ class Award(object):
         self.display_value = display_value
 
     def sorted_season_winners(self):
-        sorted_keys = sorted(self.season_winners.keys(), key=lambda x: x.sort_key, reverse=True)
+        sorted_keys = sorted(self.season_winners.keys(), key=lambda x: x.sort_key if x else '', reverse=True)
         
         results = []
         for k in sorted_keys:

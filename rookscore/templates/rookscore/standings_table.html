@@ -13,6 +13,9 @@
                         Player
                     </th>
                     <th>
+                        Games Played
+                    </th>
+                    <th>
                         Rating
                     </th>
                 </tr>
@@ -27,6 +30,9 @@
                         <a href="/player/{{ player.id }}">
                         {{ player }}
                         </a>
+                    </td>
+                    <td>
+                        {{ player.game_count }}
                     </td>
                     <td>
                         {{ player.rating }}

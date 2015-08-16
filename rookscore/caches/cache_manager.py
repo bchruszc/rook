@@ -39,6 +39,7 @@ class SeasonCacheBuilder:
 class AwardCacheBuilder: 
     def build(self, games=Game.objects.all()):
         all_seasons = CacheManager().seasons().all()
+        all_seasons.append(None)
         
         ac = AwardCache()
         

@@ -35,7 +35,7 @@ urlpatterns = patterns('',
     url(r'^player/(?P<player_id>\d+)/$', views.player, name='player'),
 
     url(r'^seasons/', views.seasons, name='seasons'),
-#    url(r'^season/(?P<season_start>\w+)/$', views.season, name='season'),
+    url(r'^season/(?P<season_start>\w+)/$', views.season, name='season'),
     
     url(r'^awards/', views.awards, name='awards'),
 

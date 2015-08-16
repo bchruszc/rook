@@ -23,8 +23,18 @@ from rookscore import utils
 
 def index(request):
     season = CacheManager().seasons().get(datetime.today())
+    return render_season(request, season)
+
+# Render a specific season, or all if season = None
+def render_season(request, season):
     rankings = Player.objects.rankings(season)
-    recent_game_list = Game.objects.order_by('-played_date')[:5]
+    
+    # Show most recent first, if a season limit to that season, and just the last 5
+    recent_game_list = Game.objects.order_by('-played_date')
+    if season:
+        recent_game_list = recent_game_list.filter(played_date__lte=season.end_date)
+    
+    recent_game_list = recent_game_list[:5]
     template = loader.get_template('rookscore/index.html')
     context = RequestContext(request, {
         'season':season,
@@ -137,6 +147,15 @@ def seasons(request):
         'seasons': seasons,
     })
     return HttpResponse(template.render(context))
+    
+def season(request, season_start):
+    season = None
+    for s in CacheManager().seasons().all():
+        if CacheManager().seasons().get_key(s.start_date) == season_start:
+            season = s
+            break
+        
+    return render_season(request, season)
 
 def players(request):
     players_list = Player.objects.order_by('first_name')
