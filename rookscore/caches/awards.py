@@ -248,12 +248,21 @@ class AwardCache:
         award.description = 'Number of games where the player was within 180 points of winning, which would have allowed Martin to win if one thing just went a little differently'
         self.all_awards.append(award)
 
-        award = GameCountAward(should_count=lambda score, game : not score.made_bid and score.score > game.scores.all()[0].score, get_url=url_first_only)
+        award = GameCountAward(
+            should_count=lambda score, game : not score.made_bid and score.score > game.scores.all()[0].score, 
+            get_url=url_first_only
+        )
         award.name = 'Star Stuck'
         award.description = 'Number of games where the player would have won if they had a star'
         self.all_awards.append(award)
 
-        award = GameCountAward(should_count=lambda score, game : score.rank == 1, calc_value=calc_percent, get_url=url_first_only, display_value=lambda values : str(values[0]) + '%')
+        award = GameCountAward(
+            should_count=lambda score, 
+            game : score.rank == 1, 
+            calc_value=calc_percent, 
+            get_url=url_first_only, 
+            display_value=lambda values : str(values[0]) + '%'
+        )
         award.name = 'Win Percentage'
         self.all_awards.append(award)
         
@@ -293,6 +302,17 @@ class AwardCache:
         award.description = 'Percentage of bids made with this player as a partner'
         self.all_awards.append(award)
         
+        # Percentage of time this player calls a bid
+        award = RoundCountAward(
+            could_count=lambda score, bid : True, 
+            should_count=lambda score, bid : bid.points_made < 100, 
+            calc_value=calc_percent,
+            get_url=url_first_only, 
+            display_value=lambda values : str(round(values[0], 1)) + '%'
+        )
+        award.name = 'Enabler'
+        award.description = 'Number of bids with over 100 points lost'
+        self.all_awards.append(award)
     def all(self):
         return self.all_awards
         

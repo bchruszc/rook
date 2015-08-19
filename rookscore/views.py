@@ -243,7 +243,7 @@ def awards(request):
     template = loader.get_template('rookscore/awards.html')
     context = RequestContext(request, {
         'awards': awards,
-        'season': current_season
+        'current_season': current_season
     })
     return HttpResponse(template.render(context))
 

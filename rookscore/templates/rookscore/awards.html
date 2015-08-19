@@ -5,7 +5,7 @@
 
 {% block body %}
 
-<h3>{% if season %}{{ season }}{% else %}All Time{% endif %} Awards</h3> {% if awards %} 
+<h3>{% if current_season %}{{ current_season }}{% else %}All Time{% endif %} Awards</h3> {% if awards %} 
 
 <div class="row">
 {% for award in awards %}
