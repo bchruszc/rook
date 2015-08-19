@@ -109,8 +109,29 @@ def games_repair(request):
         summaries = list(g.scores.all())
         utils.sortAndRankSummaries(summaries)
 
+
+        # Temp - set opponents to be everyone who's not the caller or partner
+        players = []
+        for s in g.scores.all():
+            players.append(s.player)
+        # End temp
+
         for s in summaries:
             s.save()
+
+        for bid in g.bids.all():
+            # Temp
+            opponents = []
+            
+            for p in players:
+                if p != bid.caller and p not in bid.partners.all():
+                    opponents.append(p)
+                    
+            bid.opponents = opponents
+            
+            bid.save()
+            
+            # End Temp
             
     # Update all of the Elo scores
     seasons = CacheManager().seasons().all()
