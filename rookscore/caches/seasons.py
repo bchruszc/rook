@@ -89,22 +89,22 @@ class SeasonCache():
         if month <= 3:
             s.season = "Winter"
             s.start_date = date(year, 1, 1)
-            s.end_date = date(year, 4, 1) + timedelta(days=-1)
+            s.end_date = date(year, 4, 1) #+ timedelta(minutes=-1)
             s.sort_key = year * 10 + 1
         elif month <= 6:
             s.season = "Spring"
             s.start_date = date(year, 4, 1)
-            s.end_date = date(year, 7, 1) + timedelta(days=-1)
+            s.end_date = date(year, 7, 1) #+ timedelta(minutes=-1)
             s.sort_key = year * 10 + 2
         elif month <= 9:
             s.season = "Summer"
             s.start_date = date(year, 7, 1)
-            s.end_date = date(year, 10, 1) + timedelta(days=-1)
+            s.end_date = date(year, 10, 1) #+ timedelta(minutes=-1)
             s.sort_key = year * 10 + 3
         else:
             s.season = "Fall"
             s.start_date = date(year, 10, 1)
-            s.end_date = date(year + 1, 1, 1) + timedelta(days=-1)
+            s.end_date = date(year + 1, 1, 1) #+ timedelta(minutes=-1)
             s.sort_key = year * 10 + 4
 
         self.seasons[key] = s         
