@@ -2,10 +2,11 @@
 
 This class defines the API for the application
 
+** BDC: retty sure this is deprecated...
+
 '''
 
 from __future__ import print_function
-
 
 from django.db import transaction
 from restless.dj import DjangoResource

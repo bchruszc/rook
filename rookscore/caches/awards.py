@@ -243,7 +243,10 @@ class AwardCache:
         award.name = 'Always a Bridesmaid Percentage'
         self.all_awards.append(award)
         
-        award = GameCountAward(should_count=lambda score, game : score.rank != 1 and score.score > game.scores.all()[0].score - 180, get_url=url_first_only)
+        award = GameCountAward(
+            should_count=lambda score, game : score.rank != 1 and score.score > game.scores.all()[0].score - 180, 
+            get_url=url_first_only
+        )
         award.name = 'Hypothetical Winner'
         award.description = 'Number of games where the player was within 180 points of winning, which would have allowed Martin to win if one thing just went a little differently'
         self.all_awards.append(award)
@@ -269,7 +272,7 @@ class AwardCache:
         # Percentage of time this player calls a bid
         award = RoundCountAward(
             could_count=lambda score, bid : True, 
-            should_count=lambda score, bid : score.player == bid.caller, 
+            should_count=lambda score, bid : score.player == bid.caller,  #
             calc_value=calc_percent,
             get_url=url_first_only, 
             display_value=lambda values : str(round(values[0], 1)) + '%'
@@ -280,7 +283,7 @@ class AwardCache:
         
         # Success percentage when bidding
         award = RoundCountAward(
-            could_count=lambda score, bid : score.player == bid.caller, 
+            could_count=lambda score, bid : score.player == bid.caller,#
             should_count=lambda score, bid : bid.points_made >= bid.points_bid,
             calc_value=calc_percent,
             get_url=url_first_only, 
@@ -292,7 +295,7 @@ class AwardCache:
 
         # Success percentage when partner
         award = RoundCountAward(
-            could_count=lambda score, bid : score.player in bid.partners.all(), 
+            could_count=lambda score, bid : score.player in bid.partners.all(), #
             should_count=lambda score, bid : bid.points_made >= bid.points_bid,
             calc_value=calc_percent,
             get_url=url_first_only, 

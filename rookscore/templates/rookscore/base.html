@@ -2,9 +2,14 @@
   <head>
       <meta charset="utf-8">
       <title>RookScore</title>
+      
+      {% block extrahead %}
+      {% endblock %}
+      
       <link rel="stylesheet" href="/static/css/bootstrap.css">
       <link rel="stylesheet" href="/static/css/bootswatch.min.css">
       <link rel="stylesheet" href="/static/css/rookscore.css">
+
   </head>
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -40,6 +45,9 @@
             <li>
               <a href="/awards/">Awards</a>
             </li>
+            <!--<li>
+              <a href="/charts/">Charts</a>
+            </li>-->
           </ul>
 
           <ul class="nav navbar-nav navbar-right">

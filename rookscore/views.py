@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext, loader
 from django.shortcuts import render
@@ -5,7 +7,7 @@ from django.forms.formsets import formset_factory
 
 from rookscore.forms import PlayerForm
 from rookscore.models import Player, Game, PlayerGameSummary, Bid
-#from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
+from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
 from rookscore.caches.cache_manager import CacheManager
 from rookscore.caches.seasons import SeasonCache
 from rookscore import settings
@@ -140,6 +142,13 @@ def games_repair(request):
     
     return HttpResponse("<html><body>Repair complete.</body></html>")
 
+def charts(request):
+    games_list = Game.objects.order_by('-entered_date')
+    template = loader.get_template('rookscore/charts.html')
+    context = RequestContext(request, {
+        'games_list': games_list,
+    })
+    return HttpResponse(template.render(context))   
     
 def games(request):
     games_list = Game.objects.order_by('-entered_date')
@@ -238,6 +247,8 @@ def player(request, player_id):
         })
 
 def awards(request):
+    start = datetime.now()
+    
     awards = CacheManager().awards().all()
     current_season = SeasonCache().get(datetime.today())
     template = loader.get_template('rookscore/awards.html')
@@ -245,23 +256,27 @@ def awards(request):
         'awards': awards,
         'current_season': current_season
     })
+    
+    end = datetime.now()
+    print (str(end - start) + ' seconds to generate awards')
+    
     return HttpResponse(template.render(context))
 
-'''
+
 #
-# APIS
+# DJanog Rest Framework APIS
 #
 
 # GAMES
 
 class GameDetail(generics.RetrieveAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    #permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     
     queryset = Game.objects.all()
     serializer_class = GameSerializer
     
 class GameList(generics.ListCreateAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    #permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     
     queryset = Game.objects.all()
     serializer_class = GameSerializer
@@ -305,4 +320,3 @@ class BidList(generics.ListCreateAPIView):
     
     queryset = Bid.objects.all()
     serializer_class = BidSerializer
-'''

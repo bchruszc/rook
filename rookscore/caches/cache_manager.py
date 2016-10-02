@@ -37,7 +37,7 @@ class SeasonCacheBuilder:
         return sc
 
 class AwardCacheBuilder: 
-    def build(self, games=Game.objects.all()):
+    def build(self, games=Game.objects.prefetch_related().all()):
         all_seasons = CacheManager().seasons().all()
         all_seasons.append(None)
         

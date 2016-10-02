@@ -22,8 +22,6 @@ SECRET_KEY = 'k#6gpaz5-$aoz4jf%dyg5_^^z-fpv#mbz52cl)9p&vynj$d-im'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = []
 
 
@@ -36,8 +34,10 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'south',
+    #'south',
     'rest_framework',
+    #'yet_another_django_profiler',
+    #'silk',
     'rookscore'
 )
 
@@ -48,6 +48,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'yet_another_django_profiler.middleware.ProfilerMiddleware',
+    #'silk.middleware.SilkyMiddleware',
 )
 
 ROOT_URLCONF = 'rookscore.urls'
@@ -88,7 +90,7 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly'
+        #'rest_framework.permissions.IsAuthenticatedOrReadOnly'
     ],
     
     'TEST_REQUEST_RENDERER_CLASSES': (
@@ -102,6 +104,30 @@ REST_FRAMEWORK = {
 #        'rest_framework.authentication.SessionAuthentication',
 #    )
 }
+
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            'rookscore/templates/rookscore/'
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                # Insert your TEMPLATE_CONTEXT_PROCESSORS here or use this
+                # list if you haven't customized them:
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 # A sample logging configuration. The only tangible logging performed by this configuration is to send an email 
 # to the site admins on every HTTP 500 error when DEBUG=False. See 
