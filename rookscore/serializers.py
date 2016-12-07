@@ -5,6 +5,11 @@ from rest_framework import routers, serializers, viewsets
 
 from rookscore import utils
 
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
+
 # Serializers define the API representation.
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,8 +43,11 @@ class GameSerializer(serializers.ModelSerializer):
     scores = ScoreSerializer(many=True)
     bids = BidSerializer(many=True)
 
+
     def create(self, validated_data):
         #print '***** SERIALIZING GAME ********'
+        logger.debug('***** SERIALIZING GAME ********')
+        logger.debug(validated_data)
 
         scores_data = validated_data.pop('scores')
         bids_data = validated_data.pop('bids')
