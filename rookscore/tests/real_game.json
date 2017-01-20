@@ -1,0 +1,57 @@
+{
+  "played_date": "2017-01-21T22:50:48.00551-0500",
+  "scores": [
+    {
+      "score": 20,
+      "made_bid": false,
+      "player": {
+        "player_id": 132421,
+        "last_name": "van der Munnik",
+        "id": 3,
+        "first_name": "Jeremy"
+      }
+    },
+    {
+      "score": 20,
+      "made_bid": false,
+      "player": {
+        "player_id": 1234,
+        "last_name": "Pope",
+        "id": 2,
+        "first_name": "Chris"
+      }
+    },
+    {
+      "score": 160,
+      "made_bid": false,
+      "player": {
+        "player_id": 12345,
+        "last_name": "Chruszcz",
+        "id": 1,
+        "first_name": "Bradley"
+      }
+    },
+    {
+      "score": 160,
+      "made_bid": true,
+      "player": {
+        "player_id": 1111,
+        "last_name": "B",
+        "id": 7,
+        "first_name": "Allan"
+      }
+    }
+  ],
+  "bids": [{
+    "caller": 7,
+    "partners": [1],
+    "opponents": [
+      2,
+      3
+    ],
+    "points_made": 160,
+    "points_bid": 150,
+    "hand_number": 1
+  }],
+  "entered_date": "2017-01-16T22:50:48.00552-0500"
+}

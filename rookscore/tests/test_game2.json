@@ -1,0 +1,160 @@
+{
+    "entered_date": "2017-01-18T17:28:11.821614Z",
+    "played_date": "2017-01-18T17:28:08.310000Z",
+    "scores": [
+        {
+            "id": 993,
+            "player": 4,
+            "rank": 1,
+            "score": 630,
+            "made_bid": true
+        },
+        {
+            "id": 994,
+            "player": 5,
+            "rank": 2,
+            "score": 380,
+            "made_bid": true
+        },
+        {
+            "id": 995,
+            "player": 3,
+            "rank": 3,
+            "score": 105,
+            "made_bid": true
+        },
+        {
+            "id": 996,
+            "player": 8,
+            "rank": 4,
+            "score": 80,
+            "made_bid": true
+        },
+        {
+            "id": 997,
+            "player": 11,
+            "rank": 5,
+            "score": 515,
+            "made_bid": false
+        }
+    ],
+    "bids": [
+        {
+            "caller": 4,
+            "partners": [
+                11
+            ],
+            "opponents": [
+                3,
+                5,
+                8
+            ],
+            "points_bid": 150,
+            "points_made": 180
+        },
+        {
+            "caller": 8,
+            "partners": [
+                3
+            ],
+            "opponents": [
+                11,
+                5,
+                4
+            ],
+            "points_bid": 165,
+            "points_made": 135
+        },
+        {
+            "caller": 5,
+            "partners": [
+                3
+            ],
+            "opponents": [
+                11,
+                4,
+                8
+            ],
+            "points_bid": 150,
+            "points_made": 180
+        },
+        {
+            "caller": 3,
+            "partners": [
+                4
+            ],
+            "opponents": [
+                11,
+                5,
+                8
+            ],
+            "points_bid": 155,
+            "points_made": 165
+        },
+        {
+            "caller": 4,
+            "partners": [
+                11
+            ],
+            "opponents": [
+                3,
+                5,
+                8
+            ],
+            "points_bid": 145,
+            "points_made": 180
+        },
+        {
+            "caller": 11,
+            "partners": [
+                3
+            ],
+            "opponents": [
+                5,
+                4,
+                8
+            ],
+            "points_bid": 170,
+            "points_made": 135
+        },
+        {
+            "caller": 4,
+            "partners": [
+                8
+            ],
+            "opponents": [
+                11,
+                3,
+                5
+            ],
+            "points_bid": 150,
+            "points_made": 110
+        },
+        {
+            "caller": 8,
+            "partners": [
+                11
+            ],
+            "opponents": [
+                3,
+                5,
+                4
+            ],
+            "points_bid": 140,
+            "points_made": 175
+        },
+        {
+            "caller": 4,
+            "partners": [
+                8
+            ],
+            "opponents": [
+                11,
+                3,
+                5
+            ],
+            "points_bid": 155,
+            "points_made": 160
+        }
+    ]
+}
