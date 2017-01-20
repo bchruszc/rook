@@ -38,10 +38,12 @@ INSTALLED_APPS = (
     'rest_framework',
     #'yet_another_django_profiler',
     #'silk',
+    'corsheaders',
     'rookscore'
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -50,6 +52,14 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #'yet_another_django_profiler.middleware.ProfilerMiddleware',
     #'silk.middleware.SilkyMiddleware',
+)
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = False
+CORS_URLS_REGEX = r'^/api/.*$';
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
 )
 
 ROOT_URLCONF = 'rookscore.urls'

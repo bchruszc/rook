@@ -23,6 +23,7 @@ sudo pip3 install -U djangorestframework
 sudo pip3 install -U markdown
 sudo pip3 install -U django-filter
 sudo pip3 install -U django-silk
+sudo pip3 install django-cors-headers
 #sudo pip3 install -U restless
 
 So it would seem that we use restless for the actual API, but it doesn't support Django 1.8+
