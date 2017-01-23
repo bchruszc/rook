@@ -15,11 +15,13 @@
     <h3>Recent Games</h3>
     {% if recent_game_list %}
         {% for game in recent_game_list %}
-        {% if game.scores.count != 0 %}
+        {% with game_scores=game.scores.all %}
+        {% if game_scores|length > 0 %}
         <div class="col-lg-12">
             {% include "rookscore/single_game_summary.html" %}
         </div>
         {% endif %}
+        {% endwith %}
         {% endfor %}
     </ul>
     {% else %}

@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'rest_framework',
     #'yet_another_django_profiler',
     #'silk',
+    'debug_toolbar',
     'corsheaders',
     'rookscore'
 )
@@ -45,6 +46,7 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -61,6 +63,8 @@ CORS_ALLOW_METHODS = (
     'GET',
     'POST',
 )
+
+INTERNAL_IPS = ['127.0.0.1']
 
 ROOT_URLCONF = 'rookscore.urls'
 

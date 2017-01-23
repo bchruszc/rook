@@ -5,68 +5,137 @@ from datetime import date
 
 from rookscore import utils
 
+
 def get_rank(score):
     return score.rank
+
 
 class Rankings:
     games_count = 0
     player_list = []
 
+
 class GameManager(models.Manager):
-    #pylint: disable=maybe-no-member
+    # pylint: disable=maybe-no-member
     def season(self, season):
-        return Game.objects.filter(played_date__gte=season.start_date, played_date__lte=season.end_date)
+        return Game.objects.filter(played_date__gte=season.start, played_date__lte=season.end)
+
 
 class PlayerManager(models.Manager):
-    #pylint: disable=maybe-no-member
+    # pylint: disable=maybe-no-member
     def rankings(self, season=None):
         games = None
         if season:
             games = Game.objects.season(season)
         else:
             games = Game.objects.all()
-        
+
+        games.prefetch_related('scores')
+
         # We've got the games - run through them and calculate a ranking
         ratings = {}
 
         last_game = None
         game_counts = {}
-        
+
         for g in games:
-            utils.update_elo(g, ratings)
-            
-            for s in g.scores.all():
-                if not s.player in game_counts.keys():
-                    game_counts[s.player] = 1
+            scores = g.scores.all()
+
+            utils.update_elo(scores, ratings)
+
+            for s in scores:
+                if not s.player_id in game_counts.keys():
+                    game_counts[s.player_id] = 1
                 else:
-                    game_counts[s.player] = game_counts[s.player] + 1
-            
-            last_game = g
-        
-        all_players = ratings.keys()
-        
-        for p in all_players:
-            p.rating = int(round(ratings[p]))
-            
-        all_players = utils.sortAndRankPlayers(all_players)
-        
-        for p in all_players:
+                    game_counts[s.player_id] += 1
+
+            last_game_scores = scores
+
+        all_players = self.all_as_dict()
+        ranked_player_ids = ratings.keys()
+        ranked_players = []
+
+        for player_id in ranked_player_ids:
+            player = all_players[player_id]
+            player.rating = int(round(ratings[player_id]))
+            ranked_players.append(player)
+
+        ranked_players = utils.sortAndRankPlayers(ranked_players)
+
+        for p in ranked_players:
             p.rating_change = None
-            p.game_count = game_counts[p]
-            for s in last_game.scores.all():
-                if p == s.player:
+            p.game_count = game_counts[p.id]
+            for s in last_game_scores:
+                if p.id == s.player_id:
                     p.rating_change = s.rating_change
                     break
-        
+
         rankings = Rankings()
         rankings.game_count = len(games)
-        rankings.player_list = all_players
-        
+        rankings.player_list = ranked_players
+
         return rankings
+
+    def all_as_dict(self):
+        player_dict = {}
+
+        for p in self.all():
+            player_dict[p.id] = p
+
+        return player_dict
+
+class SeasonManager(models.Manager):
+    #
+    # Creates a season if necessary, and returns it
+    #
+    def get_or_create(self, the_date):
+        existing = self.get_for_date(the_date)
+
+        if existing:
+            return existing
+
+        # Create
+        new_season = self.__create_for_date(the_date)
+        new_season.save()
+
+        return new_season
+
+    #
+    # Returns the current season
+    #
+    def current(self):
+        return self.get_for_date(datetime.today())
+
+    #
+    # Gets the season for the given date, returning None if it does not exist
+    #
+    def get_for_date(self, the_date):
+        try:
+            return self.get(start__lte=the_date, end__gte=the_date)
+        except self.model.DoesNotExist:
+            return None
+
+    def __create_for_date(self, the_date):
+        # Otherwise, add it
+        year = the_date.year
+        month = the_date.month
+
+        if month <= 3:
+            return Season(name="Winter " + str(year), start=date(year, 1, 1), end=date(year, 4, 1) + timedelta(days=-1))
+        elif month <= 6:
+            return Season(name="Spring " + str(year), start=date(year, 4, 1), end=date(year, 7, 1) + timedelta(days=-1))
+        elif month <= 9:
+            return Season(name="Summer " + str(year), start=date(year, 7, 1),
+                          end=date(year, 10, 1) + timedelta(days=-1))
+        else:
+            return Season(name="Fall " + str(year), start=date(year, 10, 1),
+                          end=date(year + 1, 1, 1) + timedelta(days=-1))
+
 
 class CumulativeRound:
     points = []
     description = ''
+
 
 class Game(models.Model):
     objects = GameManager()
@@ -75,28 +144,32 @@ class Game(models.Model):
 
     # Generated Automatically
     entered_date = models.DateTimeField('date entered')
-    
+
     def rounds(self):
         # Get the order based on the order of the scores, then build the table
         totals = {}
         players = []
-        
+        all_players = Player.objects.all_as_dict()
+
         for score in self.scores.all():
-            players.append(score.player)
-            totals[score.player] = 0
+            players.append(all_players[score.player_id])
+            totals[all_players[score.player_id]] = 0
 
         rounds = []
-        
-        for bid in self.bids.all():
+
+        for bid in self.bids.all().prefetch_related('partners', 'opponents'):
             r = CumulativeRound()
             round_total = {}
-            r.points = []  #in order by rank
+            r.points = []  # in order by rank
+
+            partners = bid.partners.all()
+
             # If the bid was made
-            
+
             if bid.points_made >= bid.points_bid:
-                round_total[bid.caller] = totals[bid.caller] + bid.points_made
-                
-                for p in bid.partners.all():
+                round_total[all_players[bid.caller_id]] = totals[all_players[bid.caller_id]] + bid.points_made
+
+                for p in partners:
                     round_total[p] = totals[p] + bid.points_made
 
                 for p in bid.opponents.all():
@@ -104,14 +177,14 @@ class Game(models.Model):
 
             # If not...
             else:
-                round_total[bid.caller] = totals[bid.caller] - bid.points_bid
-                
-                for p in bid.partners.all():
+                round_total[all_players[bid.caller_id]] = totals[all_players[bid.caller_id]] - bid.points_bid
+
+                for p in partners:
                     round_total[p] = totals[p] - bid.points_bid
 
                 for p in bid.opponents.all():
                     round_total[p] = totals[p] + (180 - bid.points_made)
-        
+
             # Collect it all
             for p in players:
                 if p in round_total.keys():
@@ -119,36 +192,36 @@ class Game(models.Model):
                     totals[p] = round_total[p]
                 else:
                     r.points.append((p, totals[p]))
-            
-            partners = []
-            for p in bid.partners.all():
-                partners.append(p.initials()) 
-                
-            r.description = str(bid.caller.initials()) + ' ' + str(bid.points_bid) + ' ' + ', '.join(partners)
+
+            partner_initials = []
+            for p in partners:
+                partner_initials.append(p.initials())
+
+            r.description = str(all_players[bid.caller_id].initials()) + ' ' + str(bid.points_bid) + ' ' + ', '.join(partner_initials)
             r.made = bid.points_made >= bid.points_bid
             r.bid = bid
             r.players = players
             rounds.append(r)
-        
+
         return rounds
-        
-    
-    def __str__(self):              # __unicode__ on Python 2
+
+    def __str__(self):  # __unicode__ on Python 2
         return 'Game played on ' + str(self.played_date)
 
     class Meta:
         ordering = ('played_date', 'entered_date')
+
 
 class Player(models.Model):
     player_id = models.IntegerField(unique=True)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
     objects = PlayerManager()
-    
+
     def initials(self):
         return self.first_name[0] + self.last_name[0]
-    
-    def __str__(self):              # __unicode__ on Python 2
+
+    def __str__(self):  # __unicode__ on Python 2
         return str(self.first_name) + ' ' + str(self.last_name)
 
     class Meta:
@@ -166,11 +239,12 @@ class Bid(models.Model):
     points_bid = models.IntegerField(default=False)
     points_made = models.IntegerField()
     hand_number = models.IntegerField(default='0')
-    
-    def __str__(self):              # __unicode__ on Python 2
+
+    def __str__(self):  # __unicode__ on Python 2
         return str(self.caller) + ' bid ' + str(self.points_bid) + ' and made ' + str(self.points_made)
 
-#    class Meta:
+
+# class Meta:
 #        ordering = ('title',)
 
 
@@ -185,10 +259,27 @@ class PlayerGameSummary(models.Model):
     rank = models.IntegerField(default='7')
     rating = models.IntegerField(default='0')
     rating_change = models.IntegerField(default='0')
-    
-    def __str__(self):              # __unicode__ on Python 2
+
+    def __str__(self):  # __unicode__ on Python 2
         return str(self.player) + ' ' + str(self.game) + ' ' + str(self.score) + ' Star: ' + str(self.made_bid)
 
     class Meta:
         ordering = ('rank', 'player')
-      
+
+
+#
+# Used to group season-related stuff together
+#
+class Season(models.Model):
+    objects = SeasonManager()
+
+    # Start and end dates are inclusive
+    start = models.DateField()
+    end = models.DateField()
+    name = models.CharField(max_length=40)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ('start',)

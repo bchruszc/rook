@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import include, url
 from django.contrib import admin
 
 from django.conf.urls.static import static
@@ -39,9 +39,11 @@ urlpatterns = [
     url(r'^player/(?P<player_id>\d+)/$', views.player, name='player'),
 
     url(r'^seasons/', views.seasons, name='seasons'),
-    url(r'^season/(?P<season_start>\w+)/$', views.season, name='season'),
+    url(r'^season/(?P<season_id>\d+)/$', views.season, name='season'),
     
     url(r'^awards/', views.awards, name='awards'),
+
+    url(r'^repair_seasons/', views.repair_seasons, name='repair_seasons'),
 
     url(r'^api/games/$', views.GameList.as_view(), name='api-games'),
     url(r'^api/games/(?P<pk>[0-9]+)/$', views.GameDetail.as_view(), name='api-game-detail'),
@@ -62,5 +64,11 @@ urlpatterns = [
     #url(r'^api/games/', GameResource.urls()),
     
     # url(r'^silk/', 'silk.urls', namespace='silk'),
-] 
+]
+
+import debug_toolbar
+urlpatterns += [
+
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ]
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

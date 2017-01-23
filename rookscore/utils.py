@@ -1,9 +1,8 @@
-
-
 def _getScore(summary):
     if summary.made_bid:
         return 10000 + summary.score
     return summary.score
+
 
 # Given a list of things and a key function to derive the value key, give things a rank
 def rank(sorted_list, key):
@@ -19,16 +18,16 @@ def rank(sorted_list, key):
             # It's a tie, give the last rank
             item.rank = last_rank
             continue
-        
+
         item.rank = count
-        
+
         last_rank = count
         last_value = value
-        
+
 
 def sortAndRankSummaries(summaries):
     summaries.sort(reverse=True, key=_getScore)
-    
+
     # Need to take in to consideration STAR, and get the rank
     last_score = -100000;
     last_rank = 1;
@@ -39,18 +38,20 @@ def sortAndRankSummaries(summaries):
             s.rank = last_rank
         else:
             s.rank = index
-        
+
         last_score = s.score
         last_rank = s.rank
         last_made_bid = s.made_bid
         index = index + 1
-        
+
+
 def _getRating(player):
     return player.rating
-    
+
+
 def sortAndRankPlayers(players):
     players = sorted(players, reverse=True, key=_getRating)
-    
+
     index = 1
     last_rating = -10000
     last_rank = 1
@@ -59,18 +60,20 @@ def sortAndRankPlayers(players):
             p.rank = last_rank
         else:
             p.rank = index
-        
+
         last_rating = p.rating
         last_rank = p.rank
         index = index + 1
-        
+
     return players
+
 
 def _win_func(value):
     # Currently inverse log
     return 10.0 ** (value / 600.0)
 
-def update_elo(game, ratings):
+
+def update_elo(scores, ratings):
     # Some ELO constants
     exp = {}
     exp[3] = [0.79, 0.21, 0.0]
@@ -78,22 +81,21 @@ def update_elo(game, ratings):
     exp[5] = [0.6, 0.25, 0.11, 0.04, 0.0]
     exp[6] = [0.55, 0.24, 0.12, 0.06, 0.03, 0.0]
     exp[7] = [0.51, 0.23, 0.13, 0.07, 0.04, 0.02, 0.0]
-        
-    player_count = game.scores.count()
-    
+
+    player_count = len(scores)
+
     default_weights = {}
     rank_weights = {}
-    scores = game.scores.all()
-    
+
     for r in range(0, player_count):
-        default_weights[r+1] = exp[player_count][r]
-    
+        default_weights[r + 1] = exp[player_count][r]
+
     min = 999.9
     tot = 0.0
 
     for s in scores:
-        if s.player not in ratings.keys():
-            ratings[s.player] = 1200
+        if s.player_id not in ratings.keys():
+            ratings[s.player_id] = 1200
 
     # Loop over each rank
     for r in range(1, 9):
@@ -102,37 +104,37 @@ def update_elo(game, ratings):
             if s.rank == r:
                 scores_at_rank.append(s)
         count = len(scores_at_rank)
-        
+
         if count == 0:
             # Nobody at this rank
             continue
-        
+
         tot_weight = 0.0
-        
+
         # Compare to everyone below you
-        for r2 in range(r, r+count):
+        for r2 in range(r, r + count):
             tot_weight = tot_weight + default_weights[r2]
-            
+
         avg_weight = tot_weight / (count * 1.0)
         rank_weights[r] = avg_weight
         if avg_weight < min:
             min = avg_weight
-        tot = tot + (avg_weight * count)
+        tot += avg_weight * count
 
-    tot = tot - (min * scores.count())
-    
+    tot -= min * scores.count()
+
     bot = 0
     for s in scores:
-        bot = bot + _win_func(ratings[s.player])
-    
-    K = scores.count() * 10
-                    
+        bot += _win_func(ratings[s.player_id])
+
+    K = len(scores) * 10
+
     for s in scores:
-        top = _win_func(ratings[s.player])
+        top = _win_func(ratings[s.player_id])
         expected = top / bot
-        actual = (rank_weights[s.rank] - min)/tot
-        #actual = 0.0
-        #if pig.rank == 1:
+        actual = (rank_weights[s.rank] - min) / tot
+        # actual = 0.0
+        # if pig.rank == 1:
         #    actual = 1.0
 
         # Determine if this is the first time that the score has been calculated - if so, save
@@ -140,14 +142,14 @@ def update_elo(game, ratings):
         precalc_rating_change = s.rating_change
 
         rating_change = (K * (actual - expected))
-        new_rating = ratings[s.player] + rating_change
+        new_rating = ratings[s.player_id] + rating_change
 
-        if(s.rating != round(new_rating) or s.rating_change != round(rating_change)):
+        if (s.rating != round(new_rating) or s.rating_change != round(rating_change)):
             s.rating = round(new_rating)
             s.rating_change = round(rating_change)
             s.save()
 
-        ratings[s.player] = new_rating
+        ratings[s.player_id] = new_rating
 
     '''
     for s in game.scores.all():
@@ -157,6 +159,8 @@ def update_elo(game, ratings):
         else:
             ratings[s.player] = ratings[s.player] + player_count - s.rank
     '''
+
+
 '''
     def calculate_ratings(self):
 #        if players > 0:

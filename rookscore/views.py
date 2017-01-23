@@ -1,20 +1,12 @@
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext, loader
 from django.shortcuts import render
-from django.forms.formsets import formset_factory
 
 from rookscore.forms import PlayerForm
-from rookscore.models import Player, Game, PlayerGameSummary, Bid
+from rookscore.models import Player, Game, PlayerGameSummary, Bid, Season
 from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
-from rookscore.caches.cache_manager import CacheManager
-from rookscore.caches.seasons import SeasonCache
 from rookscore import settings
 
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
 from rest_framework import generics
 from rest_framework import permissions
 
@@ -25,9 +17,10 @@ import logging
 
 logger = logging.getLogger('rook2_beta')
 
+
 def index(request):
-    season = CacheManager().seasons().get(datetime.today())
-    return render_season(request, season)
+    s = Season.objects.current()  # CacheManager().seasons().get(datetime.today())
+    return render_season(request, s)
 
 
 # Render a specific season, or all if season = None
@@ -37,9 +30,12 @@ def render_season(request, season):
     # Show most recent first, if a season limit to that season, and just the last 5
     recent_game_list = Game.objects.order_by('-played_date')
     if season:
-        recent_game_list = recent_game_list.filter(played_date__lte=season.end_date)
+        recent_game_list = recent_game_list.filter(played_date__lte=season.end)
 
     recent_game_list = recent_game_list[:5]
+    # recent_game_list.prefetch_related('bids', 'bids')
+    recent_game_list.prefetch_related('scores')
+
     template = loader.get_template('rookscore/index.html')
     context = RequestContext(request, {
         'season': season,
@@ -141,7 +137,7 @@ def games_repair(request):
             # End Temp
 
     # Update all of the Elo scores
-    seasons = CacheManager().seasons().all()
+    seasons = Season.objects.all()
     for s in seasons:
         Player.objects.rankings(s)
 
@@ -179,7 +175,7 @@ def game(request, game_id):
 
 
 def seasons(request):
-    seasons = CacheManager().seasons().all()
+    seasons = Season.objects.all()
     template = loader.get_template('rookscore/seasons.html')
     context = RequestContext(request, {
         'seasons': seasons,
@@ -187,12 +183,11 @@ def seasons(request):
     return HttpResponse(template.render(context))
 
 
-def season(request, season_start):
-    season = None
-    for s in CacheManager().seasons().all():
-        if CacheManager().seasons().get_key(s.start_date) == season_start:
-            season = s
-            break
+def season(request, season_id):
+    try:
+        season = Player.objects.get(id=season_id)
+    except Player.DoesNotExist:
+        raise Http404
 
     return render_season(request, season)
 
@@ -224,10 +219,10 @@ def player(request, player_id):
     for score in PlayerGameSummary.objects.filter(player=player):
         num_players = score.game.scores.count()
         if score.rank < 7:
-            finishes[num_players - 4][score.rank] = finishes[num_players - 4][score.rank] + 1
-            finishes[3][score.rank] = finishes[3][score.rank] + 1
+            finishes[num_players - 4][score.rank] += 1
+            finishes[3][score.rank] += 1
 
-    all_awards = CacheManager().awards().all()
+    all_awards = []  # TODO Awards: CacheManager().awards().all()
     player_awards = []
 
     for award in all_awards:
@@ -245,7 +240,7 @@ def player(request, player_id):
                     })
 
     player_awards.sort(key=lambda x: x['season'].sort_key if x['season'] else 0, reverse=True)
-    current_season = SeasonCache().get(datetime.today())
+    current_season = Season.objects.current()
 
     return render(request, 'rookscore/player.html',
                   {
@@ -261,8 +256,8 @@ def player(request, player_id):
 def awards(request):
     start = datetime.now()
 
-    awards = CacheManager().awards().all()
-    current_season = SeasonCache().get(datetime.today())
+    awards = [] # TODO: Awards  CacheManager().awards().all()
+    current_season = Season.objects.current()
     template = loader.get_template('rookscore/awards.html')
     context = RequestContext(request, {
         'awards': awards,
@@ -276,7 +271,15 @@ def awards(request):
 
 
 #
-# DJanog Rest Framework APIS
+# Repairs!
+#
+def repair_seasons(request):
+    for g in Game.objects.all():
+        Season.objects.get_or_create(g.played_date)
+
+
+#
+# Django Rest Framework APIS
 #
 
 # GAMES
