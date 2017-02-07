@@ -305,7 +305,7 @@ def repair_awards(request):
     games = Game.objects.all() #latest('played_date')
 
     for g in games:
-        game_save_handler(g)
+        game_save_handler(instance=g)
 
 
 #

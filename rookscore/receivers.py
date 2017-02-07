@@ -2,17 +2,17 @@
 #
 # Need to do a few things with every save - create a season if it doesn't exist, and update awards
 #
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from rookscore.caches.awards import AwardCache
 from rookscore.models import Game, Season, Player, AwardTotals
 
 
-@receiver(pre_save, sender=Game)
-def game_save_handler(game, **kwargs):
+@receiver(post_save, sender=Game)
+def game_save_handler(instance, **kwargs):
     # Find the season that we're in
-    season = Season.objects.get_or_create(game.played_date)
+    season = Season.objects.get_or_create(instance.played_date)
 
     # Preload all of the players so that they're available without hitting the database
     all_players = Player.objects.all_as_dict()
@@ -27,7 +27,7 @@ def game_save_handler(game, **kwargs):
 
         # Update the award total with this game
         award.set_data(award_totals)
-        award.add_game(game, all_players)
+        award.add_game(instance, all_players)
 
         # Save - Likely more efficient to batch update, but meh for now
         for at in award.award_totals:
