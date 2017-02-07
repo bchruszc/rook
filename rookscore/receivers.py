@@ -1,4 +1,3 @@
-
 #
 # Need to do a few things with every save - create a season if it doesn't exist, and update awards
 #
@@ -9,7 +8,8 @@ from rookscore.caches.awards import AwardCache
 from rookscore.models import Game, Season, Player, AwardTotals
 
 
-@receiver(post_save, sender=Game)
+# Not a real receiver anymore - the many to many fields weren't availble.  For now just hook in to the REST save
+# @receiver(post_save, sender=Game)
 def game_save_handler(instance, **kwargs):
     # Find the season that we're in
     season = Season.objects.get_or_create(instance.played_date)

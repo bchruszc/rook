@@ -1,6 +1,6 @@
 from django.forms import widgets
 from rest_framework import serializers
-from rookscore.models import Game, Player, PlayerGameSummary, Bid
+from rookscore.models import Game, Player, PlayerGameSummary, Bid, Season
 from rest_framework import routers, serializers, viewsets
 
 from rookscore import utils
@@ -8,6 +8,8 @@ from rookscore import utils
 import logging
 
 # Get an instance of a logger
+from rookscore.receivers import game_save_handler
+
 logger = logging.getLogger('rook2_beta')
 
 
@@ -120,6 +122,14 @@ class GameSerializer(serializers.ModelSerializer):
 
         for s in summaries:
             s.save()
+
+        # Calculate the new ELO
+
+        # Load the "old ratings" from the ratings award - a bit hacky, but it results in the updating of the summaries
+        Player.objects.rankings(Season.objects.get_or_create(game.played_date))
+
+        # Reload
+        game_save_handler(Game.objects.get(id=game.id))
 
         return game
 
