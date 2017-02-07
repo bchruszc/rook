@@ -1,9 +1,8 @@
 from rookscore import utils
 
-import operator
+from rookscore.models import AwardTotals
 
 
-# A class to store fully loaded querysets, so that we don't run as many queries when processing a given game
 class LoadedGame(object):
     def __init__(self, game, loaded_bids, scores):
         self.game = game
@@ -37,21 +36,16 @@ class Award(object):
         self.icon_url = '/static/img/goldmetal.png'
         self.name = "Empty Award"
         self.description = None
-        self.season_winners = {}  # Tuple of season -> list of winners
+        self.season_winners = []
         self.full_season_required = False
         self.display_value = display_value
 
-    def sorted_season_winners(self):
-        sorted_keys = sorted(self.season_winners.keys(), key=lambda x: x.sort_key if x else 0, reverse=True)
+    # Given a list of award totals containing the previous state for this season, append this game
+    def add_game(self, award_totals, game, all_players):
+        return award_totals
 
-        results = []
-        for k in sorted_keys:
-            results.append((k, self.season_winners[k]))
-
-        return results
-
-    def add(self, loaded_game):
-        pass
+    # def add(self, loaded_game):
+    #     pass
 
     def __str__(self):
         return self.name
@@ -67,40 +61,49 @@ class GameCountAward(Award):
         self.should_count = should_count
         self.calc_value = calc_value
         self.get_url = get_url
-        self.season_counts = {}
-        self.season_game_counts = {}
+        # self.season_counts = {}
+        # self.season_game_counts = {}
+        self.season = None
+        self.award_totals = None  # Dict player_id -> AwardTotals
 
-    def add(self, loaded_game, seasons):
-        # Assume that the ratings are current
-        for season in seasons:
-            if season and (
-                            season.start_date > loaded_game.game.played_date.date() or season.end_date < loaded_game.game.played_date.date()):
-                continue
+    # Given a list of award totals containing the previous state for this season, append this game
+    def add_game(self, game, all_players):
+        matches_dict = {}
+        for at in self.award_totals:
+            matches_dict[at.player_id] = at
 
-            self.add_to_season(loaded_game, season)
+        # Ensure that an award_totals exists for every player in this game
+        for s in game.scores.all():
+            if s.player_id not in matches_dict.keys():
+                at = AwardTotals()
+                at.player_id = s.player_id
+                at.numerator = 0
+                at.denominator = 0
+                at.type = self.name
 
-    def add_to_season(self, loaded_game, season):
-        counts = self.season_counts.get(season, {})
-        game_counts = self.season_game_counts.get(season, {})
+                matches_dict[s.player_id] = at
 
-        # Add the contents of this game to the counts
-        for s in loaded_game.scores:
-            # Get the counts for this player, defaulting to zero
-            p_count = counts.get(s.player_id, 0)
-            g_count = game_counts.get(s.player_id, 0)
+            at = matches_dict[s.player_id]
 
-            g_count += 1
-            if self.should_count(s, loaded_game):
-                p_count += 1
+            # Every game counts
+            at.denominator += 1
 
-            counts[s.player_id] = p_count
-            game_counts[s.player_id] = g_count
+            if self.should_count(s, game, all_players):
+                at.numerator += 1
+
+        self.award_totals = []
+        for at in matches_dict.values():
+            self.award_totals.append(at)
+
+    def set_data(self, ats):
+        self.award_totals = ats
 
         # Convert the counts to the winners format
         winners = []
 
-        for player, count in counts.items():
-            winners.append(AwardWinner([player], [self.calc_value(count, game_counts[player])], self.display_value))
+        for at in self.award_totals:
+            winners.append(
+                AwardWinner([at.player_id], [self.calc_value(at.numerator, at.denominator)], self.display_value))
 
         winners.sort(key=lambda x: x.values[0], reverse=True)
         utils.rank(winners, key=lambda x: x.values[0])
@@ -109,13 +112,48 @@ class GameCountAward(Award):
         for winner in winners:
             winner.trophy_url = self.get_url(winner.rank, winner.values)
 
-        # Set the main award types
-        self.season_winners[season] = winners
-        self.season_counts[season] = counts
-        self.season_game_counts[season] = game_counts
+        self.season_winners = winners
+
+        #
+        #
+        # def add_to_season(self, loaded_game, season):
+        #     counts = self.season_counts.get(season, {})
+        #     game_counts = self.season_game_counts.get(season, {})
+        #
+        #     # Add the contents of this game to the counts
+        #     for s in loaded_game.scores:
+        #         # Get the counts for this player, defaulting to zero
+        #         p_count = counts.get(s.player_id, 0)
+        #         g_count = game_counts.get(s.player_id, 0)
+        #
+        #         g_count += 1
+        #         if self.should_count(s, loaded_game):
+        #             p_count += 1
+        #
+        #         counts[s.player_id] = p_count
+        #         game_counts[s.player_id] = g_count
+        #
+        #     # Convert the counts to the winners format
+        #     winners = []
+        #
+        #     for player, count in counts.items():
+        #         winners.append(AwardWinner([player], [self.calc_value(count, game_counts[player])], self.display_value))
+        #
+        #     winners.sort(key=lambda x: x.values[0], reverse=True)
+        #     utils.rank(winners, key=lambda x: x.values[0])
+        #
+        #     # Assign icons based on rank
+        #     for winner in winners:
+        #         winner.trophy_url = self.get_url(winner.rank, winner.values)
+        #
+        #     # Set the main award types
+        #     self.season_winners[season] = winners
+        #     self.season_counts[season] = counts
+        #     self.season_game_counts[season] = game_counts
 
 
-# An award based on round-by-round accumulation.  Works for counts and percentages.  Must supply one method to determine if a round could count, and another if it does count
+# An award based on round-by-round accumulation.  Works for counts and percentages.  Must supply one method to
+# determine if a round could count, and another if it does count
 class RoundCountAward(Award):
     def __init__(self, should_count, could_count, calc_value=lambda count, games: count,
                  get_url=lambda rank, values: None, reverse=True, display_value=lambda values: values[0]):
@@ -127,46 +165,64 @@ class RoundCountAward(Award):
 
         self.calc_value = calc_value
         self.get_url = get_url
-        self.season_counts = {}
-        self.season_round_totals = {}
+        # self.season_counts = {}
+        # self.season_round_totals = {}
+        self.season = None
+        self.award_totals = None  # Dict player_id -> AwardTotals
 
-    def add(self, loaded_game, seasons):
-        # Assume that the ratings are current
-        for season in seasons:
-            if season and (
-                            season.start_date > loaded_game.game.played_date.date() or season.end_date < loaded_game.game.played_date.date()):
-                continue
+    # def add(self, loaded_game, seasons):
+    #     # Assume that the ratings are current
+    #     for season in seasons:
+    #         if season and (
+    #                         season.start_date > loaded_game.game.played_date.date() or season.end_date < loaded_game.game.played_date.date()):
+    #             continue
+    #
+    #         self.add_to_season(loaded_game, season)
 
-            self.add_to_season(loaded_game, season)
+    # Given a list of award totals containing the previous state for this season, append this game
+    def add_game(self, game, all_players):
+        # Load everything in to this dict
+        matches_dict = {}
+        for at in self.award_totals:
+            matches_dict[at.player_id] = at
 
-    def add_to_season(self, loaded_game, season):
-        counts = self.season_counts.get(season, {})
-        round_totals = self.season_round_totals.get(season, {})
+        # Ensure that an award_totals exists for every player in this game
+        for s in game.scores.all():
+            if s.player_id not in matches_dict.keys():
+                at = AwardTotals()
+                at.player_id = s.player_id
+                at.numerator = 0
+                at.denominator = 0
+                at.type = self.name
 
-        # Add the contents of this game to the counts
-        for s in loaded_game.scores:
-            for b in loaded_game.loaded_bids:
+                matches_dict[s.player_id] = at
 
+            at = matches_dict[s.player_id]
+
+            for b in game.bids.all():
                 # Get the counts for this player, defaulting to zero
-                if self.could_count(s, b.bid, b.partners):
-                    p_count = counts.get(s.player_id, 0)
-                    p_totals = round_totals.get(s.player_id, 0)
+                if self.could_count(s, b, b.partners.all()):
+                    at.denominator += 1
 
-                    p_totals += 1
-                    if self.should_count(s, b.bid, b.partners):
-                        p_count += 1
+                    if self.should_count(s, b, b.partners.all()):
+                        at.numerator += 1
 
-                    counts[s.player_id] = p_count
-                    round_totals[s.player_id] = p_totals
+        # Reset from the modified dict
+        self.award_totals = []
+        for at in matches_dict.values():
+            self.award_totals.append(at)
+
+    def set_data(self, ats):
+        self.award_totals = ats
 
         # Convert the counts to the winners format
         winners = []
 
-        for player_id, count in counts.items():
-            # We can't assume that every player was eligible, like we can for games (since nobody is forced to bid!)
-            if round_totals[player_id] > 0:
+        for at in self.award_totals:
+            # Filter out anyone who didn't have any rounds that were eligible for the award
+            if at.denominator > 0:
                 winners.append(
-                    AwardWinner([player_id], [self.calc_value(count, round_totals[player_id])], self.display_value))
+                    AwardWinner([at.player_id], [self.calc_value(at.numerator, at.denominator)], self.display_value))
 
         winners.sort(key=lambda x: x.values[0], reverse=True)
         utils.rank(winners, key=lambda x: x.values[0])
@@ -175,51 +231,61 @@ class RoundCountAward(Award):
         for winner in winners:
             winner.trophy_url = self.get_url(winner.rank, winner.values)
 
-        # Set the main award types
-        self.season_winners[season] = winners
-        self.season_counts[season] = counts
-        self.season_round_totals[season] = round_totals
+        self.season_winners = winners
 
 
+# Basic award which just keeps track of the most recent rating encountered
+# We'll just use the numerator
 class SeasonChampionAward(Award):
     def __init__(self):
         super(SeasonChampionAward, self).__init__()
         self.icon_url = '/static/img/goldtrophy.png'
         self.name = "Season Champion"
         self.full_season_required = True
+        self.award_totals = []
 
-    def add(self, loaded_game, seasons):
-        # Assume that the ratings are current
-        for season in seasons:
-            if season and (
-                            season.start_date > loaded_game.game.played_date.date() or season.end_date < loaded_game.game.played_date.date()):
-                continue
+    # Given a list of award totals containing the previous state for this season, append this game
+    def add_game(self, game, all_players):
+        # Load everything in to this dict
+        matches_dict = {}
+        for at in self.award_totals:
+            matches_dict[at.player_id] = at
 
-            self.add_to_season(loaded_game, season)
+        # Ensure that an award_totals exists for every player in this game
+        for s in game.scores.all():
+            if s.player_id not in matches_dict.keys():
+                at = AwardTotals()
+                at.player_id = s.player_id
+                at.numerator = 0
+                at.denominator = 0
+                at.type = self.name
 
-    def add_to_season(self, loaded_game, season):
-        # Check if it belongs in this season
-        winners = self.season_winners.get(season, [])
+                matches_dict[s.player_id] = at
 
-        if not winners:
-            winners = []
+            at = matches_dict[s.player_id]
 
-        for score in loaded_game.scores:
-            found = False
-            for w in winners:
-                if w.players[0] == score.player_id:
-                    # Good!  Updated with the latest
-                    w.values[0] = score.rating
-                    found = True
+            at.numerator = s.rating
 
-            if not found:
-                winners.append(
-                    AwardWinner(players=[score.player_id], values=[score.rating], display_value=self.display_value))
+        # Reset from the modified dict
+        self.award_totals = []
+        for at in matches_dict.values():
+            self.award_totals.append(at)
 
-        self.season_winners[season] = sorted(winners, key=lambda x: x.values[0], reverse=True)
-        utils.rank(self.season_winners[season], key=lambda x: x.values[0])
+    def set_data(self, ats):
+        self.award_totals = ats
 
-        for winner in self.season_winners[season]:
+        # Convert the counts to the winners format
+        winners = []
+
+        for at in self.award_totals:
+            # Filter out anyone who didn't have any rounds that were eligible for the award
+            winners.append(
+                AwardWinner([at.player_id], [at.numerator], self.display_value))
+
+        winners.sort(key=lambda x: x.values[0], reverse=True)
+        utils.rank(winners, key=lambda x: x.values[0])
+
+        for winner in winners:
             if winner.rank == 1:
                 winner.trophy_url = '/static/img/goldtrophy.png'
             elif winner.rank == 2:
@@ -228,6 +294,8 @@ class SeasonChampionAward(Award):
                 winner.trophy_url = '/static/img/bronzetrophy.png'
             else:
                 winner.trophy_url = None
+
+        self.season_winners = winners
 
 
 def compare_winners_desc(w1, w2):
@@ -257,13 +325,16 @@ class AwardCache:
         self.all_awards = []
         self.all_awards.append(SeasonChampionAward())
 
-        award = GameCountAward(should_count=lambda score, loaded_game: score.rank == 2, get_url=url_first_only)
+        award = GameCountAward(
+            should_count=lambda score, game, all_players: score.rank == 2,
+            get_url=url_first_only
+        )
         award.name = 'Always a Bridesmaid'
         award.description = 'Number of second place finishes'
         self.all_awards.append(award)
 
         award = GameCountAward(
-            should_count=lambda score, loaded_game: score.rank == 2,
+            should_count=lambda score, game, all_players: score.rank == 2,
             calc_value=calc_percent,
             get_url=url_first_only,
             display_value=lambda values: str(round(values[0], 1)) + '%'
@@ -272,7 +343,8 @@ class AwardCache:
         self.all_awards.append(award)
 
         award = GameCountAward(
-            should_count=lambda score, loaded_game: score.rank != 1 and score.score > loaded_game.scores[0].score - 180,
+            should_count=lambda score, game,
+                                all_players: score.rank != 1 and score.score > game.scores.first().score - 180,
             get_url=url_first_only
         )
         award.name = 'Hypothetical Winner'
@@ -280,23 +352,25 @@ class AwardCache:
         self.all_awards.append(award)
 
         award = GameCountAward(
-            should_count=lambda score, loaded_game: not score.made_bid and score.score > loaded_game.scores[0].score,
+            should_count=lambda score, game,
+                                all_players: not score.made_bid and score.score > game.scores.first().score,
             get_url=url_first_only
         )
         award.name = 'Star Stuck'
-        award.description = 'Number of games where the player would have won if they had a star'
+        award.description = 'Number of games where the player would have` won if they had a star'
         self.all_awards.append(award)
 
         award = GameCountAward(
-            should_count=lambda score,
-                                loaded_game: score.rank == 1,
+            should_count=lambda score, game, all_players: score.rank == 1,
             calc_value=calc_percent,
             get_url=url_first_only,
-            display_value=lambda values: str(values[0]) + '%'
+            display_value=lambda values: str(round(values[0], 1)) + '%'
         )
         award.name = 'Win Percentage'
         self.all_awards.append(award)
 
+        # TODO:  Confirm that "add" actually works when a new game is saved and data exists
+        #
         # Percentage of time this player calls a bid
         award = RoundCountAward(
             could_count=lambda score, bid, partners: True,
@@ -305,6 +379,7 @@ class AwardCache:
             get_url=url_first_only,
             display_value=lambda values: str(round(values[0], 1)) + '%'
         )
+
         award.name = 'Schoolyard Bully'
         award.description = 'Percentage of all bids called by this player'
         self.all_awards.append(award)
@@ -323,7 +398,7 @@ class AwardCache:
 
         # Success percentage when partner
         award = RoundCountAward(
-            could_count=lambda score, bid, partners: score.player_id in partners,  #
+            could_count=lambda score, bid, partners: score.player in partners,  #
             should_count=lambda score, bid, partners: bid.points_made >= bid.points_bid,
             calc_value=calc_percent,
             get_url=url_first_only,

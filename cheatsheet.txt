@@ -28,3 +28,8 @@ sudo pip3 install django-cors-headers
 
 So it would seem that we use restless for the actual API, but it doesn't support Django 1.8+
 Will need to convert to djangorestframework
+
+
+# I had to do this to add the new score/award tables (post-migration to 1.10):
+python3.6 manage.py makemigrations rookscore
+python3.6 manage.py migrate rookscore --fake-initial

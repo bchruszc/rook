@@ -52,8 +52,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'yet_another_django_profiler.middleware.ProfilerMiddleware',
-    #'silk.middleware.SilkyMiddleware',
 )
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -64,7 +62,7 @@ CORS_ALLOW_METHODS = (
     'POST',
 )
 
-INTERNAL_IPS = ['127.0.0.1']
+#INTERNAL_IPS = ['127.0.0.1']
 
 ROOT_URLCONF = 'rookscore.urls'
 

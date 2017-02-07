@@ -1,4 +1,5 @@
 {% extends "rookscore/base.html" %}
+{% load rook_extras %}
 
 <!-- https://www.iconfinder.com/iconsets/customicondesign-office7-shadow-png -->
 <!-- https://www.iconfinder.com/iconsets/crystalproject -->
@@ -43,21 +44,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for season, winners in award.sorted_season_winners %}
-                            {% if season == current_season %}
-                            {% for winner in winners %}
+                        {% for winner in award.season_winners %}
                             {% if forloop.first %}
                             <tr>
                             {% else %}
-                            <tr class="collapse award-{{forloop.parentloop.parentloop.counter}}">
+                            <tr class="collapse award-{{forloop.parentloop.counter}}">
                             {% endif %}
                                 <td>
                                    {{ winner.rank }}
                                 </td>
         
                                 <td>
-                                    <a href="/player/{{ winner.players.0.id }}">
-                                        {{ winner.players.0 }}
+                                    <a href="/player/{{ winner.players.0 }}">
+                                        {{ all_players|get_from_dict:winner.players.0 }}
                                     </a>
                                     
                                     <!--<ul>-->
@@ -92,9 +91,6 @@
                                 <!--</td>-->
                                 
                             </tr>
-                            
-                            {% endfor %}
-                            {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

@@ -2,8 +2,10 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext, loader
 from django.shortcuts import render
 
+from rookscore.caches.awards import AwardCache
 from rookscore.forms import PlayerForm
-from rookscore.models import Player, Game, PlayerGameSummary, Bid, Season
+from rookscore.models import Player, Game, PlayerGameSummary, Bid, Season, AwardTotals
+from rookscore.receivers import game_save_handler
 from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
 from rookscore import settings
 
@@ -253,15 +255,28 @@ def player(request, player_id):
                   })
 
 
+# Old render time was on the scale of ~50 seconds...
 def awards(request):
     start = datetime.now()
 
-    awards = [] # TODO: Awards  CacheManager().awards().all()
+    # A list of "Awards", where an award has an ordered list of players
     current_season = Season.objects.current()
+
+    # A dict of type -> List of AT
+    award_totals = AwardTotals.objects.group_by_type(current_season)
+
+    # Prepare by type
+    awards_list = AwardCache().all()
+    for a in awards_list:
+        if a.name in award_totals.keys():
+            # Sets the data and sorts
+            a.set_data(award_totals[a.name])
+
     template = loader.get_template('rookscore/awards.html')
     context = RequestContext(request, {
-        'awards': awards,
-        'current_season': current_season
+        'awards': awards_list,
+        'current_season': current_season,
+        'all_players': Player.objects.all_as_dict()
     })
 
     end = datetime.now()
@@ -276,6 +291,21 @@ def awards(request):
 def repair_seasons(request):
     for g in Game.objects.all():
         Season.objects.get_or_create(g.played_date)
+
+
+#
+# Repairs!
+#
+def repair_awards(request):
+    # Clear all awards
+    for at in AwardTotals.objects.all():
+        at.delete()
+
+    # Try with just latest game, for now
+    games = Game.objects.all() #latest('played_date')
+
+    for g in games:
+        game_save_handler(g)
 
 
 #

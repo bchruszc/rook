@@ -44,6 +44,7 @@ urlpatterns = [
     url(r'^awards/', views.awards, name='awards'),
 
     url(r'^repair_seasons/', views.repair_seasons, name='repair_seasons'),
+    url(r'^repair_awards/', views.repair_awards, name='repair_awards'),
 
     url(r'^api/games/$', views.GameList.as_view(), name='api-games'),
     url(r'^api/games/(?P<pk>[0-9]+)/$', views.GameDetail.as_view(), name='api-game-detail'),

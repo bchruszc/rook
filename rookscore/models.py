@@ -15,6 +15,29 @@ class Rankings:
     player_list = []
 
 
+class AwardTotalsManager(models.Manager):
+    def get_player_id_dict(self, award, season):
+        # Load everything for this award/season and populate a player-indexed dict
+
+        matches_dict = {}
+
+        for at in self.filter(season=season, type=award.name):
+            matches_dict[at.player_id] = at
+
+        return matches_dict
+
+    def group_by_type(self, season):
+        matches = self.filter(season=season)
+        matches_dict = {}
+
+        for at in matches:
+            if at.type in matches_dict.keys():
+                matches_dict[at.type].append(at)
+            else:
+                matches_dict[at.type] = [at]
+
+        return matches_dict
+
 class GameManager(models.Manager):
     # pylint: disable=maybe-no-member
     def season(self, season):
@@ -83,6 +106,7 @@ class PlayerManager(models.Manager):
             player_dict[p.id] = p
 
         return player_dict
+
 
 class SeasonManager(models.Manager):
     #
@@ -197,7 +221,8 @@ class Game(models.Model):
             for p in partners:
                 partner_initials.append(p.initials())
 
-            r.description = str(all_players[bid.caller_id].initials()) + ' ' + str(bid.points_bid) + ' ' + ', '.join(partner_initials)
+            r.description = str(all_players[bid.caller_id].initials()) + ' ' + str(bid.points_bid) + ' ' + ', '.join(
+                partner_initials)
             r.made = bid.points_made >= bid.points_bid
             r.bid = bid
             r.players = players
@@ -283,3 +308,23 @@ class Season(models.Model):
 
     class Meta:
         ordering = ('start',)
+
+
+#
+# A per season summary of a player/award eligibility.  We'll store season x type x player awards, but still way
+# cheaper than iterating over every game to recalculate!!
+#
+class AwardTotals(models.Model):
+    objects = AwardTotalsManager()
+
+    season = models.ForeignKey(Season)
+
+    # Maps to the name of the award.  The award itself will contain all of the functions to calculate it
+    type = models.CharField(max_length=100)
+    player = models.ForeignKey(Player)
+
+    numerator = models.IntegerField()
+    denominator = models.IntegerField()
+
+    def __str__(self):
+        return self.type + ' ' + str(self.season)
