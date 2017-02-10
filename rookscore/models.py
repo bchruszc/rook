@@ -3,6 +3,8 @@ from datetime import timedelta
 from datetime import datetime
 from datetime import date
 
+from trueskill import TrueSkill
+
 from rookscore import utils
 
 
@@ -38,6 +40,7 @@ class AwardTotalsManager(models.Manager):
 
         return matches_dict
 
+
 class GameManager(models.Manager):
     # pylint: disable=maybe-no-member
     def season(self, season):
@@ -57,14 +60,15 @@ class PlayerManager(models.Manager):
 
         # We've got the games - run through them and calculate a ranking
         ratings = {}
+        trueskill_ratings = {}
 
-        last_game = None
         game_counts = {}
 
         for g in games:
             scores = g.scores.all()
 
             utils.update_elo(scores, ratings)
+            utils.update_trueskill(scores, trueskill_ratings)
 
             for s in scores:
                 if not s.player_id in game_counts.keys():
@@ -78,9 +82,13 @@ class PlayerManager(models.Manager):
         ranked_player_ids = ratings.keys()
         ranked_players = []
 
+        env = TrueSkill()
+
         for player_id in ranked_player_ids:
             player = all_players[player_id]
-            player.rating = int(round(ratings[player_id]))
+            player.rating = round(ratings[player_id])
+            player.trueskill = round(env.expose(trueskill_ratings[player_id]), 1)
+            player.trueskill_hover = "mu={0:0.1f}, sigma={1:0.2f}".format(trueskill_ratings[player_id].mu, trueskill_ratings[player_id].sigma)
             ranked_players.append(player)
 
         ranked_players = utils.sortAndRankPlayers(ranked_players)
@@ -90,7 +98,8 @@ class PlayerManager(models.Manager):
             p.game_count = game_counts[p.id]
             for s in last_game_scores:
                 if p.id == s.player_id:
-                    p.rating_change = s.rating_change
+                    p.rating_change = round(s.rating_change)
+                    p.trueskill_change = round(s.trueskill_change, 2)
                     break
 
         rankings = Rankings()
@@ -284,6 +293,10 @@ class PlayerGameSummary(models.Model):
     rank = models.IntegerField(default='7')
     rating = models.IntegerField(default='0')
     rating_change = models.IntegerField(default='0')
+
+    trueskill = models.FloatField(default='0')              # Mu
+    trueskill_confidence = models.FloatField(default='0')   # Sigma
+    trueskill_change = models.FloatField(default='0')
 
     def __str__(self):  # __unicode__ on Python 2
         return str(self.player) + ' ' + str(self.game) + ' ' + str(self.score) + ' Star: ' + str(self.made_bid)

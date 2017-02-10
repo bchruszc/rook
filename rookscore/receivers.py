@@ -8,7 +8,7 @@ from rookscore.caches.awards import AwardCache
 from rookscore.models import Game, Season, Player, AwardTotals
 
 
-# Not a real receiver anymore - the many to many fields weren't availble.  For now just hook in to the REST save
+# Not a real receiver anymore - the many to many fields weren't available.  For now just hook in to the REST save
 # @receiver(post_save, sender=Game)
 def game_save_handler(instance, **kwargs):
     # Find the season that we're in

@@ -1,3 +1,6 @@
+from trueskill import Rating, rate, TrueSkill
+
+
 def _getScore(summary):
     if summary.made_bid:
         return 10000 + summary.score
@@ -71,6 +74,53 @@ def sortAndRankPlayers(players):
 def _win_func(value):
     # Currently inverse log
     return 10.0 ** (value / 600.0)
+
+
+def update_trueskill(scores, ratings):
+    env = TrueSkill()
+
+    # Parallel arrays!  All of these are for the given game
+    players = []
+    teams = []
+    ranks = []
+    expose_before = {}
+
+    # Sanity check, some bad data in test systems
+    if len(scores) < 4:
+        return
+
+    for s in scores:
+        if s.player_id not in ratings.keys():
+            ratings[s.player_id] = Rating()  # Default mu=25, sigma=8.333
+
+        r = ratings[s.player_id]
+        expose_before[s.player_id] = env.expose(r)
+        players.append(s.player_id)
+        teams.append([r])
+        ranks.append(s.rank)
+
+    # Crunch the numbers
+    new_ratings = rate(teams, ranks)
+
+    for i in range(0, len(new_ratings)):
+        ratings[players[i]] = new_ratings[i][0]
+
+    for s in scores:
+        s.trueskill = ratings[s.player_id].mu
+        s.trueskill_change = env.expose(ratings[s.player_id]) - expose_before[s.player_id]
+        s.save()
+    # for s in scores:
+        #     # Determine if this is the first time that the score has been calculated - if so, save
+        #
+        #     rating_change = 0
+        #     new_rating = ratings[s.player_id] + rating_change
+        #
+        #     if (s.rating != round(new_rating) or s.rating_change != round(rating_change)):
+        #         s.rating = round(new_rating)
+        #         s.rating_change = round(rating_change)
+        #         s.save()
+        #
+        #     ratings[s.player_id] = new_rating
 
 
 def update_elo(scores, ratings):

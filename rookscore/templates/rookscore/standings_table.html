@@ -16,7 +16,10 @@
                         Games Played
                     </th>
                     <th>
-                        Rating
+                        Elo
+                    </th>
+                    <th>
+                        TrueSkill
                     </th>
                 </tr>
             </thead>
@@ -41,6 +44,16 @@
                                 <span class="score_up">(+{{ player.rating_change }})</span>
                             {% else %}
                                 <span class="score_down">({{ player.rating_change }})</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td title="{{ player.trueskill_hover }}">
+                        {{ player.trueskill }}
+                        {% if player.trueskill_change %}
+                            {% if player.trueskill_change >= 0%}
+                                <span class="score_up">(+{{ player.trueskill_change }})</span>
+                            {% else %}
+                                <span class="score_down">({{ player.trueskill_change }})</span>
                             {% endif %}
                         {% endif %}
                     </td>
