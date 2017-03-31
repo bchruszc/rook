@@ -1,5 +1,7 @@
 from trueskill import Rating, rate, TrueSkill
 
+from rookscore import models
+
 
 def _getScore(summary):
     if summary.made_bid:
@@ -45,15 +47,22 @@ def sortAndRankSummaries(summaries):
         last_score = s.score
         last_rank = s.rank
         last_made_bid = s.made_bid
-        index = index + 1
+        index += 1
+
+
+def _getTrueskill(player):
+    return player.trueskill
 
 
 def _getRating(player):
     return player.rating
 
 
-def sortAndRankPlayers(players):
-    players = sorted(players, reverse=True, key=_getRating)
+def sortAndRankPlayers(players, rating_system):
+    if (rating_system == models.ELO):
+        players = sorted(players, reverse=True, key=_getRating)
+    else:
+        players = sorted(players, reverse=True, key=_getTrueskill)
 
     index = 1
     last_rating = -10000
@@ -66,7 +75,7 @@ def sortAndRankPlayers(players):
 
         last_rating = p.rating
         last_rank = p.rank
-        index = index + 1
+        index += 1
 
     return players
 
@@ -107,9 +116,10 @@ def update_trueskill(scores, ratings):
 
     for s in scores:
         s.trueskill = ratings[s.player_id].mu
+        s.trueskill_confidence = ratings[s.player_id].sigma
         s.trueskill_change = env.expose(ratings[s.player_id]) - expose_before[s.player_id]
         s.save()
-    # for s in scores:
+        # for s in scores:
         #     # Determine if this is the first time that the score has been calculated - if so, save
         #
         #     rating_change = 0

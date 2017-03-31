@@ -2,6 +2,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext, loader
 from django.shortcuts import render
 
+from rookscore import models
 from rookscore.caches.awards import AwardCache
 from rookscore.forms import PlayerForm
 from rookscore.models import Player, Game, PlayerGameSummary, Bid, Season, AwardTotals
@@ -27,7 +28,13 @@ def index(request):
 
 # Render a specific season, or all if season = None
 def render_season(request, season):
-    rankings = Player.objects.rankings(season)
+
+    if season:
+        rating_system = season.rating_system
+    else:
+        rating_system = models.TRUESKILL
+
+    rankings = Player.objects.rankings(season, rating_system)
 
     # Show most recent first, if a season limit to that season, and just the last 5
     recent_game_list = Game.objects.order_by('-played_date')
@@ -41,6 +48,7 @@ def render_season(request, season):
     template = loader.get_template('rookscore/index.html')
     context = RequestContext(request, {
         'season': season,
+        'rating_system': rating_system,
         'rankings': rankings,
         'recent_game_list': recent_game_list,
         'settings': settings,

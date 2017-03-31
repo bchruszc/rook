@@ -7,6 +7,15 @@ from trueskill import TrueSkill
 
 from rookscore import utils
 
+# Season-related constants
+ELO = 'e'
+TRUESKILL = 't'
+
+RATING_SYSTEMS = (
+    (ELO, 'Elo'),
+    (TRUESKILL, 'TrueSkill'),
+)
+
 
 def get_rank(score):
     return score.rank
@@ -49,8 +58,8 @@ class GameManager(models.Manager):
 
 class PlayerManager(models.Manager):
     # pylint: disable=maybe-no-member
-    def rankings(self, season=None):
-        games = None
+    # Generate on-the-fly rankings for this season
+    def rankings(self, season=None, rating_system=TRUESKILL):
         if season:
             games = Game.objects.season(season)
         else:
@@ -71,7 +80,7 @@ class PlayerManager(models.Manager):
             utils.update_trueskill(scores, trueskill_ratings)
 
             for s in scores:
-                if not s.player_id in game_counts.keys():
+                if s.player_id not in game_counts.keys():
                     game_counts[s.player_id] = 1
                 else:
                     game_counts[s.player_id] += 1
@@ -88,10 +97,11 @@ class PlayerManager(models.Manager):
             player = all_players[player_id]
             player.rating = round(ratings[player_id])
             player.trueskill = round(env.expose(trueskill_ratings[player_id]), 1)
-            player.trueskill_hover = "mu={0:0.1f}, sigma={1:0.2f}".format(trueskill_ratings[player_id].mu, trueskill_ratings[player_id].sigma)
+            player.trueskill_hover = "mu={0:0.1f}, sigma={1:0.2f}".format(trueskill_ratings[player_id].mu,
+                                                                          trueskill_ratings[player_id].sigma)
             ranked_players.append(player)
 
-        ranked_players = utils.sortAndRankPlayers(ranked_players)
+        ranked_players = utils.sortAndRankPlayers(ranked_players, rating_system)
 
         for p in ranked_players:
             p.rating_change = None
@@ -294,8 +304,8 @@ class PlayerGameSummary(models.Model):
     rating = models.IntegerField(default='0')
     rating_change = models.IntegerField(default='0')
 
-    trueskill = models.FloatField(default='0')              # Mu
-    trueskill_confidence = models.FloatField(default='0')   # Sigma
+    trueskill = models.FloatField(default='0')  # Mu
+    trueskill_confidence = models.FloatField(default='0')  # Sigma
     trueskill_change = models.FloatField(default='0')
 
     def __str__(self):  # __unicode__ on Python 2
@@ -315,6 +325,10 @@ class Season(models.Model):
     start = models.DateField()
     end = models.DateField()
     name = models.CharField(max_length=40)
+    rating_system = models.CharField(
+        max_length=1,
+        choices=RATING_SYSTEMS,
+        default=ELO)  # Set the default to ELO for historical seasons
 
     def __str__(self):
         return self.name

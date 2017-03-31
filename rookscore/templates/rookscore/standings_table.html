@@ -16,10 +16,11 @@
                         Games Played
                     </th>
                     <th>
+                        {% if rating_system == 'e' %}
                         Elo
-                    </th>
-                    <th>
+                        {% else %}
                         TrueSkill
+                        {% endif %}
                     </th>
                 </tr>
             </thead>
@@ -37,23 +38,24 @@
                     <td>
                         {{ player.game_count }}
                     </td>
-                    <td>
-                        {{ player.rating }}
-                        {% if player.rating_change %}
-                            {% if player.rating_change >= 0%}
-                                <span class="score_up">(+{{ player.rating_change }})</span>
-                            {% else %}
-                                <span class="score_down">({{ player.rating_change }})</span>
-                            {% endif %}
-                        {% endif %}
-                    </td>
                     <td title="{{ player.trueskill_hover }}">
+                        {% if rating_system == 'e' %}
+                            {{ player.rating }}
+                            {% if player.rating_change %}
+                                {% if player.rating_change >= 0%}
+                                    <span class="score_up">(+{{ player.rating_change }})</span>
+                                {% else %}
+                                    <span class="score_down">({{ player.rating_change }})</span>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
                         {{ player.trueskill }}
-                        {% if player.trueskill_change %}
-                            {% if player.trueskill_change >= 0%}
-                                <span class="score_up">(+{{ player.trueskill_change }})</span>
-                            {% else %}
-                                <span class="score_down">({{ player.trueskill_change }})</span>
+                            {% if player.trueskill_change %}
+                                {% if player.trueskill_change >= 0%}
+                                    <span class="score_up">(+{{ player.trueskill_change }})</span>
+                                {% else %}
+                                    <span class="score_down">({{ player.trueskill_change }})</span>
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                     </td>

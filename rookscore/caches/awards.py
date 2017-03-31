@@ -1,3 +1,6 @@
+from trueskill import TrueSkill, Rating
+
+from rookscore import models
 from rookscore import utils
 
 from rookscore.models import AwardTotals
@@ -235,7 +238,8 @@ class RoundCountAward(Award):
 
 
 # Basic award which just keeps track of the most recent rating encountered
-# We'll just use the numerator
+# We'll just use the numerator for elo and denominator as TrueSkill
+# Hacky solution for a decimal point is to store TrueSkill * 10 in the integer field
 class SeasonChampionAward(Award):
     def __init__(self):
         super(SeasonChampionAward, self).__init__()
@@ -243,6 +247,7 @@ class SeasonChampionAward(Award):
         self.name = "Season Champion"
         self.full_season_required = True
         self.award_totals = []
+        self.display_value = lambda values: str(values[0])
 
     # Given a list of award totals containing the previous state for this season, append this game
     def add_game(self, game, all_players):
@@ -251,6 +256,7 @@ class SeasonChampionAward(Award):
         for at in self.award_totals:
             matches_dict[at.player_id] = at
 
+        env = TrueSkill()
         # Ensure that an award_totals exists for every player in this game
         for s in game.scores.all():
             if s.player_id not in matches_dict.keys():
@@ -266,6 +272,13 @@ class SeasonChampionAward(Award):
 
             at.numerator = s.rating
 
+            if s.trueskill > 0:
+                at.denominator = 10 * round(env.expose(Rating(mu=s.trueskill, sigma=s.trueskill_confidence)), 1)
+            else:
+                at.denominator = 0
+
+            continue
+
         # Reset from the modified dict
         self.award_totals = []
         for at in matches_dict.values():
@@ -278,9 +291,13 @@ class SeasonChampionAward(Award):
         winners = []
 
         for at in self.award_totals:
-            # Filter out anyone who didn't have any rounds that were eligible for the award
+            if at.season.rating_system == models.ELO:
+                value = at.numerator
+            else:
+                value = round(at.denominator / 10.0, 1)
+
             winners.append(
-                AwardWinner([at.player_id], [at.numerator], self.display_value))
+                AwardWinner([at.player_id], [value], self.display_value))
 
         winners.sort(key=lambda x: x.values[0], reverse=True)
         utils.rank(winners, key=lambda x: x.values[0])
