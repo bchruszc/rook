@@ -1,3 +1,4 @@
+from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext, loader
 from django.shortcuts import render
@@ -164,7 +165,22 @@ def charts(request):
 
 
 def games(request):
-    games_list = Game.objects.order_by('-entered_date')
+    all_games = Game.objects.order_by('-entered_date')
+    paginator = Paginator(all_games, 10)  # Show 10 games per page
+
+    page = request.GET.get('page')
+
+    try:
+        games_list = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        games_list = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        games_list = paginator.page(paginator.num_pages)
+
+    games_list.object_list.prefetch_related('scores')
+
     template = loader.get_template('rookscore/games.html')
     context = RequestContext(request, {
         'games_list': games_list,

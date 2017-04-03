@@ -9,8 +9,8 @@
     
     <a href="/season/All" class="list-group-item">All Time</a>
 
-    {% for s in seasons %}
-    <a href="/season/{{s.season}}{{s.year}}" class="list-group-item">{{ s.season }} {{ s.year }}</a>
+    {% for s in seasons.reverse %}
+    <a href="/season/{{s.season}}{{s.year}}" class="list-group-item">{{ s.name }}</a>
     {% endfor %}
     </ul>
 

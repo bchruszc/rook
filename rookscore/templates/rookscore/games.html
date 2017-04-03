@@ -5,11 +5,30 @@
     <h3>Games Page</h3>
 
     {% if games_list %}
-    {% for game in games_list %}
-    {% include "rookscore/single_game_summary.html" %}
-    {% endfor %}
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if games_list.has_previous %}
+                <a href="?page={{ games_list.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ games_list.number }} of {{ games_list.paginator.num_pages }}.
+            </span>
+
+            {% if games_list.has_next %}
+                <a href="?page={{ games_list.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+
+        {% for game in games_list %}
+            {% with game_scores=game.scores.all %}
+                {% include "rookscore/single_game_summary.html" %}
+            {% endwith %}
+        {% endfor %}
     {% else %}
-    <p>No games are available.</p>
+        <p>No games are available.</p>
     {% endif %}
 
 {% endblock %}

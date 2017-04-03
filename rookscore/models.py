@@ -200,6 +200,9 @@ class Game(models.Model):
 
         rounds = []
 
+        if len(players) == 0:
+            return rounds
+
         for bid in self.bids.all().prefetch_related('partners', 'opponents'):
             r = CumulativeRound()
             round_total = {}
@@ -212,8 +215,18 @@ class Game(models.Model):
             if bid.points_made >= bid.points_bid:
                 round_total[all_players[bid.caller_id]] = totals[all_players[bid.caller_id]] + bid.points_made
 
+                alone = True
                 for p in partners:
                     round_total[p] = totals[p] + bid.points_made
+                    if p.id != bid.caller_id:
+                        alone = False
+
+                # Bonus for going alone = 10pts for every partner you didn't need
+                if alone:
+                    if len(players) >= 6:
+                        round_total[all_players[bid.caller_id]] += 40
+                    else:
+                        round_total[all_players[bid.caller_id]] += 20
 
                 for p in bid.opponents.all():
                     round_total[p] = totals[p] + (180 - bid.points_made)
