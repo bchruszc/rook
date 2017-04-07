@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 PROJECT_DIR = os.path.dirname(__file__)
 
@@ -24,7 +25,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = (
@@ -34,11 +34,11 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #'south',
+    # 'south',
     'rest_framework',
-    #'yet_another_django_profiler',
-    #'silk',
-    'debug_toolbar',
+    # 'yet_another_django_profiler',
+    # 'silk',
+    # 'debug_toolbar',
     'corsheaders',
     'rookscore'
 )
@@ -46,7 +46,7 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -62,12 +62,11 @@ CORS_ALLOW_METHODS = (
     'POST',
 )
 
-#INTERNAL_IPS = ['127.0.0.1']
+# INTERNAL_IPS = ['127.0.0.1']
 
 ROOT_URLCONF = 'rookscore.urls'
 
 WSGI_APPLICATION = 'rookscore.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -102,21 +101,20 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        #'rest_framework.permissions.IsAuthenticatedOrReadOnly'
+        # 'rest_framework.permissions.IsAuthenticatedOrReadOnly'
     ],
-    
+
     'TEST_REQUEST_RENDERER_CLASSES': (
         'rest_framework.renderers.MultiPartRenderer',
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.TemplateHTMLRenderer'
     )
 
-#    'DEFAULT_AUTHENTICATION_CLASSES': (
-#        'rest_framework.authentication.BasicAuthentication',
-#        'rest_framework.authentication.SessionAuthentication',
-#    )
+    #    'DEFAULT_AUTHENTICATION_CLASSES': (
+    #        'rest_framework.authentication.BasicAuthentication',
+    #        'rest_framework.authentication.SessionAuthentication',
+    #    )
 }
-
 
 TEMPLATES = [
     {
@@ -160,10 +158,10 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler'
         },
         'applogfile': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'rook2_beta.log'),
-            'maxBytes': 1024*1024*15, # 15MB
+            'maxBytes': 1024 * 1024 * 15,  # 15MB
             'backupCount': 10,
         },
     },
@@ -174,9 +172,8 @@ LOGGING = {
             'propagate': True,
         },
         'rook2_beta': {
-            'handlers': ['applogfile',],
+            'handlers': ['applogfile', ],
             'level': 'DEBUG',
         },
     },
 }
-
