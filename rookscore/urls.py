@@ -40,7 +40,8 @@ urlpatterns = [
 
     url(r'^seasons/', views.seasons, name='seasons'),
     url(r'^season/(?P<season_id>\d+)/$', views.season, name='season'),
-    
+    url(r'^season/all/$', views.season_all, name='season_all'),
+
     url(r'^awards/', views.awards, name='awards'),
 
     url(r'^repair_seasons/', views.repair_seasons, name='repair_seasons'),

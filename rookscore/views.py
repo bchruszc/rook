@@ -29,7 +29,6 @@ def index(request):
 
 # Render a specific season, or all if season = None
 def render_season(request, season):
-
     if season:
         rating_system = season.rating_system
     else:
@@ -211,11 +210,15 @@ def seasons(request):
 
 def season(request, season_id):
     try:
-        season = Player.objects.get(id=season_id)
+        season = Season.objects.get(id=season_id)
     except Player.DoesNotExist:
-        raise Http404
+        season = None
 
     return render_season(request, season)
+
+
+def season_all(request):
+    return render_season(request, None)
 
 
 def players(request):
@@ -326,7 +329,7 @@ def repair_awards(request):
         at.delete()
 
     # Try with just latest game, for now
-    games = Game.objects.all() #latest('played_date')
+    games = Game.objects.all()  # latest('played_date')
 
     for g in games:
         game_save_handler(instance=g)
