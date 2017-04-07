@@ -117,7 +117,7 @@ def update_trueskill(scores, ratings):
     for s in scores:
         s.trueskill = ratings[s.player_id].mu
         s.trueskill_confidence = ratings[s.player_id].sigma
-        s.trueskill_change = env.expose(ratings[s.player_id]) - expose_before[s.player_id]
+        s.trueskill_change = round(env.expose(ratings[s.player_id]) - expose_before[s.player_id], 1)
         s.save()
         # for s in scores:
         #     # Determine if this is the first time that the score has been calculated - if so, save

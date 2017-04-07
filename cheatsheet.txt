@@ -5,21 +5,21 @@
 #
 
 #
+# Commands
+#
+
+
+#
 #  To update models
 #
 
-# Django ??? on Cloud9:
-./manage.py schemamigration rookscore --auto
-./manage.py migrate rookscore
-
-# Django 1.7+ (webfaction)
-python3.4 manage.py.bak makemigrations
-python3.4 manage.py.bak migrate
+# Django 1.10+
+python3.5 manage.py makemigrations rookscore
+python3.5 manage.py migrate
 
 
 # Updated django on cloud9:
 sudo pip3 install -U Django
-sudo pip3 install -U djangorestframework
 sudo pip3 install -U markdown
 sudo pip3 install -U django-filter
 sudo pip3 install -U django-silk
@@ -30,7 +30,6 @@ sudo pip3 install django-cors-headers
 sudo pip3 install -U skills
 sudo pip3 install -U numpy
 
-
-# I had to do this to add the new score/award tables (post-migration to 1.10):
+# I had to do this to add the new score/award tables (post-migration to 1.10 - likely won't be needed again):
 python3.6 manage.py makemigrations rookscore
 python3.6 manage.py migrate rookscore --fake-initial

@@ -12,8 +12,8 @@
                     <a href="/player/{{ score.player_id }}/">{{ score.player.initials }}</a> <br> {{ score.score }}{% if score.made_bid %} * {% endif %}
                     <br>
                     {% if score.trueskill_change >= 0 %}
-                    <span class="score_up">(+{{ score.trueskill_change|floatformat:2 }})</span> {% else %}
-                    <span class="score_down">({{ score.trueskill_change|floatformat:2 }})</span> {% endif %}
+                    <span class="score_up">(+{{ score.trueskill_change|floatformat:1 }})</span> {% else %}
+                    <span class="score_down">({{ score.trueskill_change|floatformat:1 }})</span> {% endif %}
                 </th>
                 
                 {% endfor %}
