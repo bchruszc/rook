@@ -33,3 +33,27 @@ sudo pip3 install -U numpy
 # I had to do this to add the new score/award tables (post-migration to 1.10 - likely won't be needed again):
 python3.6 manage.py makemigrations rookscore
 python3.6 manage.py migrate rookscore --fake-initial
+
+# Initial Setup:
+- Create Django default app
+rm -rf myproject/
+git clone git@github.com:bchruszc/rook.git
+nano apache2/conf/httpd.conf
+- Reduce processes and threads if debugging
+- Replace references to myproject with rook
+- Replace references to myproject/myproject with rook/rookscore
+
+nano rook/rookscore/settings.py
+- Add domain(s) to ALLOWED_HOSTS
+
+Changing line 25 of django/db/backends/sqlite3/schema.py from this;
+self._initial_pragma_fk = c.fetchone()[0]
+to this
+self._initial_pragma_fk = 0  # c.fetchone()[0]
+to work around an sqlite3 bug
+
+python3.5 rook/manage.py makemigrations
+python3.5 rook/manage.py migrate
+python3.5 rook/manage.py createsuperuser
+
+./apache2/bin/restart

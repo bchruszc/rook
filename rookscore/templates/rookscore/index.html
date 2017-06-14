@@ -1,14 +1,105 @@
 {% extends "rookscore/base.html" %}
 
+{% block extra_script %}
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<link href="/static/css/nv.d3.css" rel="stylesheet">
+<script src="/static/js/nv.d3.js"></script>
+<script type = 'text/javascript'>
+
+
+var data = {{ graph_data|safe }}
+
+nv.addGraph(function() {
+  var chart = nv.models.lineChart()
+                .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                .showYAxis(true)        //Show the y-axis
+                .showXAxis(true)        //Show the x-axis
+  ;
+  chart.xScale(d3.time.scale())
+  chart.margin({"left": 80, "right": 50, "top": 20, "bottom": 30,})
+
+  var margin = {top: 40.5, right: 40.5, bottom: 50.5, left: 60.5},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+/*
+From: http://jsfiddle.net/3r88bgjw/
+*/
+/*
+    var tickMultiFormat = d3.time.format.multi([
+        ["%-I:%M%p", function(d) { return d.getMinutes(); }], // not the beginning of the hour
+        ["%-I%p", function(d) { return d.getHours(); }], // not midnight
+        ["%b %-d", function(d) { return d.getDate() != 1; }], // not the first of the month
+        ["%b %-d", function(d) { return d.getMonth(); }], // not Jan 1st
+        ["%Y", function() { return true; }]
+    ]);
+*/
+
+  chart.xAxis
+    .axisLabel('Date')
+
+    /*
+    .tickFormat(function (d) { return tickMultiFormat(new Date(d * 1000)); });
+    .tickFormat(function (d) { return new Date(d * 1000); });
+    */
+
+    .tickFormat(function (timestamp) {
+        d = new Date(timestamp * 1000);
+        return ("0" + d.getDate()).slice(-2) + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" +
+        d.getFullYear();
+      })
+    .rotateLabels(-45)
+    .tickPadding(10)
+
+    ;
+
+/*
+  chart.yScale(d3.scale.log()
+    .base(Math.E)
+    .domain([-5, 30])
+    .range([350, 0]));
+*/
+
+  chart.showXAxis(false);
+
+  chart.yAxis
+    .axisLabel('Rating')
+    .tickFormat(d3.format('.01f'))
+    ;
+
+  d3.select('#chart svg')
+    .datum(data)
+    .transition().duration(500)
+    .call(chart)
+    ;
+
+  nv.utils.windowResize(chart.update);
+
+  return chart;
+});
+</script>
+{% endblock %}
+
 {% block body %}
 <div class="col-lg-6">
-    <h3>{% if season %}{{ season }}{% else %} All Time{% endif %} Standings</h3>
+    <div>
+        <h3>{% if season %}{{ season }}{% else %} All Time{% endif %} Standings</h3>
 
     {% if rankings.player_list %}
         {% include "rookscore/standings_table.html" %}
     {% else %}
-    <p>No players are available!</p>
+            <p>No players are available!</p>
     {% endif %}
+        </div>
+    <div id="chart" class="col-lg-12">
+        <h3>Rating over time</h3>
+
+        <!-- Placeholder for graphs -->
+        <!-- Could use some margins? -->
+        <svg height="350" width="100%"></svg>
+    </div>
 </div>
 
 <div class="col-lg-6">

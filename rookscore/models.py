@@ -66,12 +66,17 @@ class PlayerManager(models.Manager):
             games = Game.objects.all()
 
         games.prefetch_related('scores')
+        all_players = self.all_as_dict()
 
         # We've got the games - run through them and calculate a ranking
         ratings = {}
         trueskill_ratings = {}
 
+        # For the selected season, create a time/ratings pair for each player
+        ratings_history = {}
+
         game_counts = {}
+        env = TrueSkill()
 
         for g in games:
             scores = g.scores.all()
@@ -82,16 +87,19 @@ class PlayerManager(models.Manager):
             for s in scores:
                 if s.player_id not in game_counts.keys():
                     game_counts[s.player_id] = 1
+                    ratings_history[all_players[s.player_id]] = []
                 else:
                     game_counts[s.player_id] += 1
 
+                # For every player in this game, log their updated ratings at this point in time
+                elo = round(env.expose(trueskill_ratings[s.player_id]), 1)
+                ratings_history[all_players[s.player_id]].append({'x': g.played_date.timestamp(), 'y': elo})
+
             last_game_scores = scores
 
-        all_players = self.all_as_dict()
         ranked_player_ids = ratings.keys()
         ranked_players = []
 
-        env = TrueSkill()
 
         for player_id in ranked_player_ids:
             player = all_players[player_id]
@@ -116,7 +124,7 @@ class PlayerManager(models.Manager):
         rankings.game_count = len(games)
         rankings.player_list = ranked_players
 
-        return rankings
+        return rankings, ratings_history
 
     def all_as_dict(self):
         player_dict = {}

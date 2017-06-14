@@ -14,10 +14,11 @@ from rookscore import settings
 from rest_framework import generics
 from rest_framework import permissions
 
-from datetime import datetime
+from datetime import datetime, date
 from rookscore import utils
 
 import logging
+import json
 
 logger = logging.getLogger('rook2_beta')
 
@@ -27,6 +28,26 @@ def index(request):
     return render_season(request, s)
 
 
+# Need to convert the histories in to d3 consumable data.  Simple python dicts converted to a json string
+def rankings_history_to_graph_data(history):
+
+    all_series = []
+
+    for k in history.keys():
+        series = {'values': history[k], 'key': k.initials()}
+        all_series.append(series)
+
+    def json_serial(obj):
+        """JSON serializer for objects not serializable by default json code"""
+
+        if isinstance(obj, (datetime, date)):
+            serial = obj.timestamp()
+            return serial
+        raise TypeError("Type %s not serializable" % type(obj))
+
+    return json.dumps(all_series, default=json_serial)
+
+
 # Render a specific season, or all if season = None
 def render_season(request, season):
     if season:
@@ -34,7 +55,7 @@ def render_season(request, season):
     else:
         rating_system = models.TRUESKILL
 
-    rankings = Player.objects.rankings(season, rating_system)
+    rankings, ratings_history = Player.objects.rankings(season, rating_system)
 
     # Show most recent first, if a season limit to that season, and just the last 5
     recent_game_list = Game.objects.order_by('-played_date')
@@ -52,6 +73,7 @@ def render_season(request, season):
         'rankings': rankings,
         'recent_game_list': recent_game_list,
         'settings': settings,
+        'graph_data': rankings_history_to_graph_data(ratings_history),
     })
     return HttpResponse(template.render(context))
 
