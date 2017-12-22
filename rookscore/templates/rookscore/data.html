@@ -1,0 +1,19 @@
+{% extends "rookscore/base.html" %}
+{% load rook_extras %}
+
+<!-- https://www.iconfinder.com/iconsets/customicondesign-office7-shadow-png -->
+<!-- https://www.iconfinder.com/iconsets/crystalproject -->
+
+{% block extra_script %}
+<script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+<script src="/static/js/rook_data.js"></script>
+{% endblock %}
+
+{% block body %}
+
+<h3>Data</h3>
+
+<div class="row">
+    <p id="max_data"></p>
+</div>
+{% endblock %}

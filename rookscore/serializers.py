@@ -14,6 +14,12 @@ logger = logging.getLogger('rook2_beta')
 
 
 # Serializers define the API representation.
+class RawPlayerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = ('id', 'player_id', 'first_name', 'last_name')
+
+
 class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
@@ -24,10 +30,12 @@ class PlayerSerializer(serializers.ModelSerializer):
     #     logger.debug(data)
     #     return data['id']
 
+
 # ViewSets define the view behavior.
 class PlayerViewSet(viewsets.ModelViewSet):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+
 
 #
 # For whatever reason I made it so that the "Scores" player sends extra data - I assume so that on-demand adding of
@@ -48,6 +56,14 @@ class PlayerDetailedLookupField(serializers.RelatedField):
         return Player.objects.get(pk=data['id'])
 
 
+class RawScoreSerializer(serializers.ModelSerializer):
+    queryset = PlayerGameSummary.objects.all()
+
+    class Meta:
+        model = PlayerGameSummary
+        fields = ('id', 'player', 'rank', 'score', 'made_bid')
+
+
 class ScoreSerializer(serializers.ModelSerializer):
     player = PlayerDetailedLookupField(queryset=Player.objects.all())
 
@@ -61,10 +77,22 @@ class ScoreViewSet(viewsets.ModelViewSet):
     serializer_class = ScoreSerializer
 
 
+class RawBidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bid
+        fields = ('id', 'caller', 'partners', 'opponents', 'points_bid', 'points_made')
+
+
 class BidSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bid
         fields = ('caller', 'partners', 'opponents', 'points_bid', 'points_made')
+
+
+class RawGameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Game
+        fields = ('id', 'entered_date', 'played_date', 'scores', 'bids')
 
 
 class GameSerializer(serializers.ModelSerializer):

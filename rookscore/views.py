@@ -8,7 +8,8 @@ from rookscore.caches.awards import AwardCache
 from rookscore.forms import PlayerForm
 from rookscore.models import Player, Game, PlayerGameSummary, Bid, Season, AwardTotals
 from rookscore.receivers import game_save_handler
-from rookscore.serializers import GameSerializer, PlayerSerializer, ScoreSerializer, BidSerializer
+from rookscore.serializers import GameSerializer, RawGameSerializer, PlayerSerializer, RawPlayerSerializer, \
+    ScoreSerializer, RawScoreSerializer, BidSerializer, RawBidSerializer
 from rookscore import settings
 
 from rest_framework import generics
@@ -30,7 +31,6 @@ def index(request):
 
 # Need to convert the histories in to d3 consumable data.  Simple python dicts converted to a json string
 def rankings_history_to_graph_data(history):
-
     all_series = []
 
     for k in history.keys():
@@ -304,6 +304,15 @@ def player(request, player_id):
                   })
 
 
+def data(request):
+    template = loader.get_template('rookscore/data.html')
+    context = RequestContext(request, {
+
+    })
+
+    return HttpResponse(template.render(context))
+
+
 # Old render time was on the scale of ~50 seconds...
 def awards(request):
     start = datetime.now()
@@ -375,6 +384,34 @@ class GameList(generics.ListCreateAPIView):
 
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+
+
+class RawGameList(generics.ListAPIView):
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    queryset = Game.objects.all()
+    serializer_class = RawGameSerializer
+
+
+class RawScoreList(generics.ListAPIView):
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    queryset = PlayerGameSummary.objects.all()
+    serializer_class = RawScoreSerializer
+
+
+class RawBidList(generics.ListAPIView):
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    queryset = Bid.objects.all()
+    serializer_class = RawBidSerializer
+
+
+class RawPlayerList(generics.ListAPIView):
+    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    queryset = Player.objects.all()
+    serializer_class = RawPlayerSerializer
 
 
 # PLAYERS
