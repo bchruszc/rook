@@ -13,7 +13,10 @@
                         Player
                     </th>
                     <th>
-                        Games Played
+                        Games
+                    </th>
+                    <th>
+                        Wins
                     </th>
                     <th>
                         {% if rating_system == 'e' %}
@@ -38,6 +41,10 @@
                     <td>
                         {{ player.game_count }}
                     </td>
+                    <td title="{% widthratio player.win_count player.game_count 100 %}%">
+                        {{ player.win_count }}
+                    </td>
+
                     <td title="{{ player.trueskill_hover }}">
                         {% if rating_system == 'e' %}
                             {{ player.rating }}

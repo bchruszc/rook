@@ -76,6 +76,8 @@ class PlayerManager(models.Manager):
         ratings_history = {}
 
         game_counts = {}
+        win_counts = {}
+
         env = TrueSkill()
 
         for g in games:
@@ -88,8 +90,12 @@ class PlayerManager(models.Manager):
                 if s.player_id not in game_counts.keys():
                     game_counts[s.player_id] = 1
                     ratings_history[all_players[s.player_id]] = []
+                    win_counts[s.player_id] = 0
                 else:
                     game_counts[s.player_id] += 1
+
+                if s.rank is 1:
+                    win_counts[s.player_id] += 1
 
                 # For every player in this game, log their updated ratings at this point in time
                 elo = round(env.expose(trueskill_ratings[s.player_id]), 1)
@@ -99,7 +105,6 @@ class PlayerManager(models.Manager):
 
         ranked_player_ids = ratings.keys()
         ranked_players = []
-
 
         for player_id in ranked_player_ids:
             player = all_players[player_id]
@@ -114,6 +119,7 @@ class PlayerManager(models.Manager):
         for p in ranked_players:
             p.rating_change = None
             p.game_count = game_counts[p.id]
+            p.win_count = win_counts[p.id]
             for s in last_game_scores:
                 if p.id == s.player_id:
                     p.rating_change = round(s.rating_change)
